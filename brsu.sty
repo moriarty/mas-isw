@@ -1,16 +1,21 @@
+%%%%%%%%
+% Under Construction BRS-U LaTeX Theme
+% Updates by: Alex Moriarty
+% Original by: Jochen Wierum
+%%%%%%%%
 \mode<presentation>{
 	\useinnertheme{circles}
 	\useoutertheme{shadow}
 
-	\definecolor{fhgrau}{rgb}{0.9, 0.9, 0.9}
+	\definecolor{brsugrey}{rgb}{0.9, 0.9, 0.9}
 	\usecolortheme[rgb={0, 0.594, 0.949}]{structure}
 
-	\setbeamercolor{palette primary}{use=structure, fg=structure.fg, bg=fhgrau}
-	\setbeamercolor{palette secondary}{bg=fhgrau}
-	\setbeamercolor{palette tertiary}{bg=fhgrau}
-	\setbeamercolor{palette quaternary}{bg=fhgrau}
-	\setbeamercolor{blackongrey}{bg=fhgrau,fg=black}
-	\setbeamercolor{blueongrey}{bg=fhgrau,fg=structure.fg}
+	\setbeamercolor{palette primary}{use=structure, fg=structure.fg, bg=brsugrey}
+	\setbeamercolor{palette secondary}{bg=brsugrey}
+	\setbeamercolor{palette tertiary}{bg=brsugrey}
+	\setbeamercolor{palette quaternary}{bg=brsugrey}
+	\setbeamercolor{blackongrey}{bg=brsugrey,fg=black}
+	\setbeamercolor{blueongrey}{bg=brsugrey,fg=structure.fg}
 	\setbeamercovered{highly dynamic}
 	\setbeamertemplate{blocks}[rounded][shadow=true]
 	\setbeamercolor{block title}{use=structure, fg=white, bg=structure.fg}
@@ -20,7 +25,7 @@
 	\setbeamercolor{block body alerted}{parent=normal text, use=block title alerted, bg=block title alerted.bg!10!bg}
 	\setbeamercolor{block body example}{parent=normal text, use=block title example, bg=block title example.bg!10!bg}
 	
-	\defbeamertemplate*{sidebar right}{fh theme}{}
+	\defbeamertemplate*{sidebar right}{brsu theme}{}
 	\addtobeamertemplate{headline}{}{ %
 	   \ifx\insertframetitle\@empty %
 	       \vspace{0.3cm}\hspace{0.3cm}\insertlogo %
@@ -39,7 +44,7 @@
 	   \fi}
 }
 
-\logo{\includegraphics[width=2.5cm]{../images/fh-logo}}
+%\logo{\includegraphics[width=2.5cm]{../images/fh-logo}}
 
 % Foliennummern
 \expandafter\def\expandafter\insertshorttitle\expandafter{%
@@ -84,6 +89,6 @@
     \end{frame}
 }
 
-\definecolor{fhblau}{rgb}{0, 0.594, 0.949}
-\newcommand{\keyword}[1]{\textcolor{fhblau}{\texttt{#1}}}
+\definecolor{brsublue}{rgb}{0, 0.594, 0.949}
+\newcommand{\keyword}[1]{\textcolor{brsublue}{\texttt{#1}}}
 
