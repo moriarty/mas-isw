@@ -1,0 +1,32 @@
+ISW Topic:
+
+
+Biologically Inspired Robotics
+-> Reviewing Biologically inspired architectures
+-> Searching for biologically inspired algorithms
+-> Benchmarking RatSLAM on the youBot in the AtWork env
+
+Mobile Manipulation
+-> ??
+
+Ronny hartanto
+hiarchial task network planner
+
+AtWork Themes
+-> Grasp Planning
+-> Navigation with NFC landmarks
+-> Off robot sensors
+
+Learning
+-> Lifelong Learning
+-> Offline "Sleep cycle" data processing.
+
+
+Architectures
+->  
+
+Algorithms
+-> RatSLAM, CatSLAM, 
+
+Approaches
+-> 
