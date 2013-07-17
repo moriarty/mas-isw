@@ -1,0 +1,147 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Journal Article
+% LaTeX Template
+% Version 1.2 (15/5/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside]{article}
+
+\usepackage{lipsum} % Package to generate dummy text throughout this template
+
+\usepackage[longnamesfirst]{natbib}
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage{multicol} % Used for the two-column layout of the document
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}}
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{Reading Reports $\bullet$ Alexander Moriarty $\bullet$ ISW Top30 2013} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+\usepackage{enumitem}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{
+What can cognitive architectures do for robotics?
+}} % Article title
+
+\author{
+\large
+\textsc{Unmesh Kurup, Christian Lebiere}\\[2mm] % Your name
+\normalsize Carnegie Mellon University\\ % Your institution
+%\normalsize \href{mailto:john@smith.com}{john@smith.com} % Your email address
+\normalsize Biologically Inspired Cognitive Architectures\\
+\small Volume 2, October 2012, p.88-99
+\vspace{-5mm}
+}
+\date{}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Insert title
+
+\thispagestyle{fancy} % All pages have headers and footers
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+
+\noindent Research in robotic systems has traditionally been identified with approaches that are characterized by the use of carefully crafted representations and processes to find optimal solutions. The use of such representations and processes, which we refer to as the algorithmic approach, is uniquely suited for problems requiring strong models, i.e., tasks and domains that are well defined, and/or involve close interaction with the environment. These problems have historically been the focus of robotics research because they exercise perceptual, motor and manipulation capabilities that form the basic foundational abilities required for every robotic agent. Recent work (for example ROS and Tekkotsu) on the abstraction and encapsulation of perception and motor functionality has standardized the above mentioned foundational abilities and allowed researchers to study problems in less clearly defined and open-ended domains: problems that have previously been considered the province of AI and Cognitive Science. In this paper, we argue that the study of these problems (examples of which include multi-agent inter- action, instruction following and reasoning in complex domains) referred to under the rubric of Cognitive Robotics is best achieved via the use of cognitive architectures - unified computational frameworks developed specifically for general problem solving and human cognitive modelling. We lay out the relevant architectural concepts and principles and illustrate them using nine cognitive architectures that are under active development - Soar, ACT-R, CLARION, GMU-BICA, Polyscheme, Co-JACK, ADAPT, ACT-R/E, and SS-RICS.\cite{Kurup2012}
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\begin{multicols}{2} % Two-column layout throughout the main article text
+
+\section{Keywords \& Concepts}
+\begin{itemize}[noitemsep]
+\item Cognitive Architectures
+\item Cognitive Robotics
+\item Artificial Intelligence
+\item High Level Planning
+\item Biologically Inspired
+\item Autonomous Robots
+%\end{itemize}
+%
+%------------------------------------------------
+%
+%\section{Concepts}
+%\begin{itemize}[noitemsep]
+\item Better understand cognition, to build smarter robots
+\item Requirements to achieve robots capable of high level cognition
+\item Implementing cognitive architectures
+\item High level cognitive tasks on robotics
+\end{itemize}
+
+
+%------------------------------------------------
+
+\section{Thoughts \& Summary}
+\begin{itemize}[noitemsep]
+\item Current and past cognitive architectures are introduced. 
+\item Attempt is made to define what requirements a robot must meet to have `high level cognition', includes: Represent large amount of knowledge, Learning and Recognition, Problem solving \& Reasoning, Adaptive, Natural human interaction.
+\item Provides an overview of the terms Architecture and Content from Cognitive Science prospect. Architecture is shared by all similar agents, Content is individual.
+\item In conclusion addresses drawbacks to cognitive architectures, including: computer algorithms and computer hardware have always been developed together, our current hardware is very different from the natural hardware seen in biology.
+\end{itemize}
+
+
+%------------------------------------------------
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\bibliographystyle{plain}
+\bibliography{Top30}
+
+
+
+%----------------------------------------------------------------------------------------
+
+\end{multicols}
+
+\end{document}

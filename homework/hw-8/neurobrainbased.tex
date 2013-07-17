@@ -1,0 +1,162 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Journal Article
+% LaTeX Template
+% Version 1.2 (15/5/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside]{article}
+
+\usepackage{lipsum} % Package to generate dummy text throughout this template
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage{multicol} % Used for the two-column layout of the document
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}}
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{Reading Reports $\bullet$ Alexander Moriarty $\bullet$ ISW Top30 2013} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+\usepackage{enumitem}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{
+Biomimetics: biologically inspired technology
+}} % Article title
+
+\author{
+\large
+\textsc{Yoseph Bar-Cohen}\\[2mm] % Your name
+\normalsize California Institute of Technology\\ % Your institution
+%\normalsize \href{mailto:john@smith.com}{john@smith.com} % Your email address
+\normalsize II ECCOMAS THEMATIC CONFERENCE ON SMART STRUCTURES AND MATERIALS\\
+Lisbon, Portugal, July 18-21, 2005
+\vspace{-5mm}
+}
+\date{}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Insert title
+
+\thispagestyle{fancy} % All pages have headers and footers
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+
+\noindent Over 3.8 billion years of evolution nature introduced highly effective and power efficient 
+biological mechanisms offering incredible models for innovation inspiration. Humans have always 
+made efforts to imitate nature and we are increasingly reaching levels of advancement that it 
+becomes significantly easier to imitate, copy, and adapt biological methods, processes and systems. 
+Advances in science and technology are leading to knowledge and capabilities that are multiplying 
+every year. This brought us to the ability to create technology that is far beyond the simple 
+mimicking of nature. Having better tools to understand and to implement nature's principles we are 
+now equipped like never before to be inspired by nature and to employ our tools in far superior 
+ways. Effectively, by bio-inspiration we can have a better view and value of nature capability while 
+studying its models to learn what can be extracted, copied or adapted. Using electroactive polymers 
+(EAP) as artificial muscles is adding an important element in the development of biologically 
+inspired technologies. This paper reviews the various aspects of the field of biomimetics and the 
+role that EAP play and the outlook for its evolution. 
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\begin{multicols}{2} % Two-column layout throughout the main article text
+
+\section{Keywords}
+\begin{itemize}[noitemsep]
+\item Biomimetics
+\item Biologically Inspired
+\item Electroactive Polymers (EAP)
+\item Mimicking
+\item Robotics
+\item Design
+\end{itemize}
+
+%------------------------------------------------
+
+\section{Concepts}
+\begin{itemize}[noitemsep]
+\item Learn from Nature
+\item Efficient Design
+\item Smart Structural Design
+\item New Materials \& Mediums
+\end{itemize}
+
+
+%------------------------------------------------
+
+\section{Thoughts \& Summary}
+\begin{itemize}[noitemsep]
+\item This paper nicely introduces reasons for looking at biology as a model in all areas of robotics, with emphasis on developing modern biologically inspired materials.
+\item The Author mentions the need to sort `biological capabilities along technological categories.' High level categories could be: AI, Structures \& Tools, Materials and processes, Artificial Muscles, Bio-Sensors
+\item Paper emphasizes the current state of the art, shortcomings and what lies ahead in developing new biologically inspired materials for use in robotics 
+\end{itemize}
+
+
+%------------------------------------------------
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+
+\bibitem[Yoseph Bar-Cohen, 2005]{BarCohen05}
+Bar-Cohen, Yoseph (2005).
+\newblock Biomimetics: biologically inspired technology
+\newblock{\em II ECCOMAS THEMATIC CONFERENCE ON SMART STRUCTURES AND MATERIALS}
+\newblock{\em C.A. Mota Soares et al. (Eds.) }
+\newblock {\em Lisbon, Portugal, July 18-21, 2005}
+ 
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{multicols}
+
+\end{document}
