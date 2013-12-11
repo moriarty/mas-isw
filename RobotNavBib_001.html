@@ -1,0 +1,1415 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>JabRef references</title>
+<meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
+<script type="text/javascript">
+<!--
+// QuickSearch script for JabRef HTML export 
+// Version: 3.0
+//
+// Copyright (c) 2006-2011, Mark Schenk
+//
+// This software is distributed under a Creative Commons Attribution 3.0 License
+// http://creativecommons.org/licenses/by/3.0/
+//
+// Features:
+// - intuitive find-as-you-type searching
+//    ~ case insensitive
+//    ~ ignore diacritics (optional)
+//
+// - search with/without Regular Expressions
+// - match BibTeX key
+//
+
+// Search settings
+var searchAbstract = true;	// search in abstract
+var searchReview = true;	// search in review
+
+var noSquiggles = true; 	// ignore diacritics when searching
+var searchRegExp = false; 	// enable RegExp searches
+
+
+if (window.addEventListener) {
+	window.addEventListener("load",initSearch,false); }
+else if (window.attachEvent) {
+	window.attachEvent("onload", initSearch); }
+
+function initSearch() {
+	// check for quick search table and searchfield
+	if (!document.getElementById('qs_table')||!document.getElementById('quicksearch')) { return; }
+
+	// load all the rows and sort into arrays
+	loadTableData();
+	
+	//find the query field
+	qsfield = document.getElementById('qs_field');
+
+	// previous search term; used for speed optimisation
+	prevSearch = '';
+
+	//find statistics location
+	stats = document.getElementById('stat');
+	setStatistics(-1);
+	
+	// set up preferences
+	initPreferences();
+
+	// shows the searchfield
+	document.getElementById('quicksearch').style.display = 'block';
+	document.getElementById('qs_field').onkeyup = quickSearch;
+}
+
+function loadTableData() {
+	// find table and appropriate rows
+	searchTable = document.getElementById('qs_table');
+	var allRows = searchTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+	// split all rows into entryRows and infoRows (e.g. abstract, review, bibtex)
+	entryRows = new Array(); infoRows = new Array(); absRows = new Array(); revRows = new Array();
+
+	// get data from each row
+	entryRowsData = new Array(); absRowsData = new Array(); revRowsData = new Array(); 
+	
+	BibTeXKeys = new Array();
+	
+	for (var i=0, k=0, j=0; i<allRows.length;i++) {
+		if (allRows[i].className.match(/entry/)) {
+			entryRows[j] = allRows[i];
+			entryRowsData[j] = stripDiacritics(getTextContent(allRows[i]));
+			allRows[i].id ? BibTeXKeys[j] = allRows[i].id : allRows[i].id = 'autokey_'+j;
+			j ++;
+		} else {
+			infoRows[k++] = allRows[i];
+			// check for abstract/review
+			if (allRows[i].className.match(/abstract/)) {
+				absRows.push(allRows[i]);
+				absRowsData[j-1] = stripDiacritics(getTextContent(allRows[i]));
+			} else if (allRows[i].className.match(/review/)) {
+				revRows.push(allRows[i]);
+				revRowsData[j-1] = stripDiacritics(getTextContent(allRows[i]));
+			}
+		}
+	}
+	//number of entries and rows
+	numEntries = entryRows.length;
+	numInfo = infoRows.length;
+	numAbs = absRows.length;
+	numRev = revRows.length;
+}
+
+function quickSearch(){
+	
+	tInput = qsfield;
+
+	if (tInput.value.length == 0) {
+		showAll();
+		setStatistics(-1);
+		qsfield.className = '';
+		return;
+	} else {
+		t = stripDiacritics(tInput.value);
+
+		if(!searchRegExp) { t = escapeRegExp(t); }
+			
+		// only search for valid RegExp
+		try {
+			textRegExp = new RegExp(t,"i");
+			closeAllInfo();
+			qsfield.className = '';
+		}
+			catch(err) {
+			prevSearch = tInput.value;
+			qsfield.className = 'invalidsearch';
+			return;
+		}
+	}
+	
+	// count number of hits
+	var hits = 0;
+
+	// start looping through all entry rows
+	for (var i = 0; cRow = entryRows[i]; i++){
+
+		// only show search the cells if it isn't already hidden OR if the search term is getting shorter, then search all
+		if(cRow.className.indexOf('noshow')==-1 || tInput.value.length <= prevSearch.length){
+			var found = false; 
+
+			if (entryRowsData[i].search(textRegExp) != -1 || BibTeXKeys[i].search(textRegExp) != -1){ 
+				found = true;
+			} else {
+				if(searchAbstract && absRowsData[i]!=undefined) {
+					if (absRowsData[i].search(textRegExp) != -1){ found=true; } 
+				}
+				if(searchReview && revRowsData[i]!=undefined) {
+					if (revRowsData[i].search(textRegExp) != -1){ found=true; } 
+				}
+			}
+			
+			if (found){
+				cRow.className = 'entry show';
+				hits++;
+			} else {
+				cRow.className = 'entry noshow';
+			}
+		}
+	}
+
+	// update statistics
+	setStatistics(hits)
+	
+	// set previous search value
+	prevSearch = tInput.value;
+}
+
+
+// Strip Diacritics from text
+// http://stackoverflow.com/questions/990904/javascript-remove-accents-in-strings
+
+// String containing replacement characters for stripping accents 
+var stripstring = 
+    'AAAAAAACEEEEIIII'+
+    'DNOOOOO.OUUUUY..'+
+    'aaaaaaaceeeeiiii'+
+    'dnooooo.ouuuuy.y'+
+    'AaAaAaCcCcCcCcDd'+
+    'DdEeEeEeEeEeGgGg'+
+    'GgGgHhHhIiIiIiIi'+
+    'IiIiJjKkkLlLlLlL'+
+    'lJlNnNnNnnNnOoOo'+
+    'OoOoRrRrRrSsSsSs'+
+    'SsTtTtTtUuUuUuUu'+
+    'UuUuWwYyYZzZzZz.';
+
+function stripDiacritics(str){
+
+    if(noSquiggles==false){
+        return str;
+    }
+
+    var answer='';
+    for(var i=0;i<str.length;i++){
+        var ch=str[i];
+        var chindex=ch.charCodeAt(0)-192;   // Index of character code in the strip string
+        if(chindex>=0 && chindex<stripstring.length){
+            // Character is within our table, so we can strip the accent...
+            var outch=stripstring.charAt(chindex);
+            // ...unless it was shown as a '.'
+            if(outch!='.')ch=outch;
+        }
+        answer+=ch;
+    }
+    return answer;
+}
+
+// http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+// NOTE: must escape every \ in the export code because of the JabRef Export...
+function escapeRegExp(str) {
+  return str.replace(/[-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+function toggleInfo(articleid,info) {
+
+	var entry = document.getElementById(articleid);
+	var abs = document.getElementById('abs_'+articleid);
+	var rev = document.getElementById('rev_'+articleid);
+	var bib = document.getElementById('bib_'+articleid);
+	
+	if (abs && info == 'abstract') {
+		abs.className.indexOf('noshow') == -1?abs.className = 'abstract noshow':abs.className = 'abstract show';
+	} else if (rev && info == 'review') {
+		rev.className.indexOf('noshow') == -1?rev.className = 'review noshow':rev.className = 'review show';
+	} else if (bib && info == 'bibtex') {
+		bib.className.indexOf('noshow') == -1?bib.className = 'bibtex noshow':bib.className = 'bibtex show';
+	} else { 
+		return;
+	}
+
+	// check if one or the other is available
+	var revshow; var absshow; var bibshow;
+	(abs && abs.className.indexOf('noshow') == -1)? absshow = true: absshow = false;
+	(rev && rev.className.indexOf('noshow') == -1)? revshow = true: revshow = false;	
+	(bib && bib.className.indexOf('noshow') == -1)? bibshow = true: bibshow = false;
+	
+	// highlight original entry
+	if(entry) {
+		if (revshow || absshow || bibshow) {
+		entry.className = 'entry highlight show';
+		} else {
+		entry.className = 'entry show';
+		}
+	}
+	
+	// When there's a combination of abstract/review/bibtex showing, need to add class for correct styling
+	if(absshow) {
+		(revshow||bibshow)?abs.className = 'abstract nextshow':abs.className = 'abstract';
+	} 
+	if (revshow) {
+		bibshow?rev.className = 'review nextshow': rev.className = 'review';
+	}	
+	
+}
+
+function setStatistics (hits) {
+	if(hits < 0) { hits=numEntries; }
+	if(stats) { stats.firstChild.data = hits + '/' + numEntries}
+}
+
+function getTextContent(node) {
+	// Function written by Arve Bersvendsen
+	// http://www.virtuelvis.com
+	
+	if (node.nodeType == 3) {
+	return node.nodeValue;
+	} // text node
+	if (node.nodeType == 1 && node.className != "infolinks") { // element node
+	var text = [];
+	for (var chld = node.firstChild;chld;chld=chld.nextSibling) {
+		text.push(getTextContent(chld));
+	}
+	return text.join("");
+	} return ""; // some other node, won't contain text nodes.
+}
+
+function showAll(){
+	closeAllInfo();
+	for (var i = 0; i < numEntries; i++){ entryRows[i].className = 'entry show'; }
+}
+
+function closeAllInfo(){
+	for (var i=0; i < numInfo; i++){
+		if (infoRows[i].className.indexOf('noshow') ==-1) {
+			infoRows[i].className = infoRows[i].className + ' noshow';
+		}
+	}
+}
+
+function clearQS() {
+	qsfield.value = '';
+	showAll();
+}
+
+function redoQS(){
+	showAll();
+	quickSearch(qsfield);
+}
+
+function updateSetting(obj){
+	var option = obj.id;
+	var checked = obj.value;
+
+	switch(option)
+	 {
+	 case "opt_searchAbs":
+	   searchAbstract=!searchAbstract;
+	   redoQS();
+	   break;
+	 case "opt_searchRev":
+	   searchReview=!searchReview;
+	   redoQS();
+	   break;
+	 case "opt_useRegExp":
+	   searchRegExp=!searchRegExp;
+	   redoQS();
+	   break;
+	 case "opt_noAccents":
+	   noSquiggles=!noSquiggles;
+	   loadTableData();
+	   redoQS();
+	   break;
+	 }
+}
+
+function initPreferences(){
+	if(searchAbstract){document.getElementById("opt_searchAbs").checked = true;}
+	if(searchReview){document.getElementById("opt_searchRev").checked = true;}
+	if(noSquiggles){document.getElementById("opt_noAccents").checked = true;}
+	if(searchRegExp){document.getElementById("opt_useRegExp").checked = true;}
+	
+	if(numAbs==0) {document.getElementById("opt_searchAbs").parentNode.style.display = 'none';}
+	if(numRev==0) {document.getElementById("opt_searchRev").parentNode.style.display = 'none';}
+}
+
+function toggleSettings(){
+	var togglebutton = document.getElementById('showsettings');
+	var settings = document.getElementById('settings');
+	
+	if(settings.className == "hidden"){
+		settings.className = "show";
+		togglebutton.innerText = "close settings";
+		togglebutton.textContent = "close settings";
+	}else{
+		settings.className = "hidden";
+		togglebutton.innerText = "settings...";		
+		togglebutton.textContent = "settings...";
+	}
+}
+
+-->
+</script>
+<style type="text/css">
+body { background-color: white; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2; padding: 1em; color: #2E2E2E; margin: auto 2em; }
+
+form#quicksearch { width: auto; border-style: solid; border-color: gray; border-width: 1px 0px; padding: 0.7em 0.5em; display:none; position:relative; }
+span#searchstat {padding-left: 1em;}
+
+div#settings { margin-top:0.7em; /* border-bottom: 1px transparent solid; background-color: #efefef; border: 1px grey solid; */ }
+div#settings ul {margin: 0; padding: 0; }
+div#settings li {margin: 0; padding: 0 1em 0 0; display: inline; list-style: none; }
+div#settings li + li { border-left: 2px #efefef solid; padding-left: 0.5em;}
+div#settings input { margin-bottom: 0px;}
+
+div#settings.hidden {display:none;}
+
+#showsettings { border: 1px grey solid; padding: 0 0.5em; float:right; line-height: 1.6em; text-align: right; }
+#showsettings:hover { cursor: pointer; }
+
+.invalidsearch { background-color: red; }
+input[type="button"] { background-color: #efefef; border: 1px #2E2E2E solid;}
+
+table { width: 100%; empty-cells: show; border-spacing: 0em 0.2em; margin: 1em 0em; border-style: none; }
+th, td { border: 1px gray solid; border-width: 1px 1px; padding: 0.5em; vertical-align: top; text-align: left; }
+th { background-color: #efefef; }
+td + td, th + th { border-left: none; }
+
+td a { color: navy; text-decoration: none; }
+td a:hover  { text-decoration: underline; }
+
+tr.noshow { display: none;}
+tr.highlight td { background-color: #EFEFEF; border-top: 2px #2E2E2E solid; font-weight: bold; }
+tr.abstract td, tr.review td, tr.bibtex td { background-color: #EFEFEF; text-align: justify; border-bottom: 2px #2E2E2E solid; }
+tr.nextshow td { border-bottom: 1px gray solid; }
+
+tr.bibtex pre { width: 100%; overflow: auto; white-space: pre-wrap;}
+p.infolinks { margin: 0.3em 0em 0em 0em; padding: 0px; }
+
+@media print {
+	p.infolinks, #qs_settings, #quicksearch, t.bibtex { display: none !important; }
+	tr { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<form action="" id="quicksearch">
+<input type="text" id="qs_field" autocomplete="off" placeholder="Type to search..." /> <input type="button" onclick="clearQS()" value="clear" />
+<span id="searchstat">Matching entries: <span id="stat">0</span></span>
+<div id="showsettings" onclick="toggleSettings()">settings...</div>
+<div id="settings" class="hidden">
+<ul>
+<li><input type="checkbox" class="search_setting" id="opt_searchAbs" onchange="updateSetting(this)"><label for="opt_searchAbs"> include abstract</label></li>
+<li><input type="checkbox" class="search_setting" id="opt_searchRev" onchange="updateSetting(this)"><label for="opt_searchRev"> include review</label></li>
+<li><input type="checkbox" class="search_setting" id="opt_useRegExp" onchange="updateSetting(this)"><label for="opt_useRegExp"> use RegExp</label></li>
+<li><input type="checkbox" class="search_setting" id="opt_noAccents" onchange="updateSetting(this)"><label for="opt_noAccents"> ignore accents</label></li>
+</ul>
+</div>
+</form>
+<table id="qs_table" border="1">
+<thead><tr><th width="20%">Author</th><th width="30%">Title</th><th width="5%">Year</th><th width="30%">Journal/Proceedings</th><th width="10%">Reftype</th><th width="5%">DOI/URL</th></tr></thead>
+<tbody><tr id="Adamiv2008" class="entry">
+	<td>Adamiv, O., Sachenko, A. and Kapura, V.</td>
+	<td>Gradient method for autonomous robot navigation <p class="infolinks">[<a href="javascript:toggleInfo('Adamiv2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Adamiv2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td>Modern Problems of Radio Engineering, Telecommunications and Computer Science, 2008 Proceedings of International Conference on&nbsp;</td>
+	<td>article</td>
+	<td>&nbsp;</td>
+</tr>
+<tr id="abs_Adamiv2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: The analysis of global and local navigation methods for an autonomous mobile robot allowed to select the main lacks of existent methods of navigation. The improved local navigation method based on the use of potential fields for movement taking into account the gradient of direction to the goal is proposed.</td>
+</tr>
+<tr id="bib_Adamiv2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Adamiv2008,
+  author = {Adamiv, O. and Sachenko, A. and Kapura, V.},
+  title = {Gradient method for autonomous robot navigation},
+  journal = {Modern Problems of Radio Engineering, Telecommunications and Computer Science, 2008 Proceedings of International Conference on},
+  year = {2008}
+}
+</pre></td>
+</tr>
+<tr id="Bae2011" class="entry">
+	<td>Bae, J.-H. and Song, J.-B.</td>
+	<td>Monocular vision-based lane detection using segmented regions from edge information <p class="infolinks">[<a href="javascript:toggleInfo('Bae2011','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Bae2011','bibtex')">BibTeX</a>]</p></td>
+	<td>2011</td>
+	<td>2011 8th International Conference on Ubiquitous Robots and Ambient Intelligence (URAI), pp. 499-502&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/URAI.2011.6145871">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Bae2011" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: For autonomous navigation of a mobile robot in outdoor environments, the information on the lane markers on the road is useful for localization, path planning, and other navigation techniques of a mobile robot. To detect the lane markers, this paper proposes the segmentation based on the Canny edge and the inverse perspective mapping (IPM). The experimental results show that the proposed scheme successfully works in real outdoor environments.</td>
+</tr>
+<tr id="bib_Bae2011" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Bae2011,
+  author = {Bae, Ji-Hun and Song, Jae-Bok},
+  title = {Monocular vision-based lane detection using segmented regions from edge information},
+  journal = {2011 8th International Conference on Ubiquitous Robots and Ambient Intelligence (URAI)},
+  publisher = {IEEE},
+  year = {2011},
+  pages = {499--502},
+  doi = {http://dx.doi.org/10.1109/URAI.2011.6145871}
+}
+</pre></td>
+</tr>
+<tr id="Batalin2004" class="entry">
+	<td>Batalin, M.A., Sukhatme, G.S. and Hattig, M.</td>
+	<td>Mobile robot navigation using a sensor network <p class="infolinks">[<a href="javascript:toggleInfo('Batalin2004','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Batalin2004','bibtex')">BibTeX</a>]</p></td>
+	<td>2004</td>
+	<td>ICRA 2004: Proceedings of the 2004 IEEE International Conference on Robotics and Automation, pp. 636-641&nbsp;</td>
+	<td>inproceedings</td>
+	<td><a href="http://dx.doi.org/10.1109/ROBOT.2004.1307220">DOI</a> <a href="http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=1307220">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Batalin2004" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: We describe an algorithm for robot navigation using a sensor network embedded in the environment. Sensor nodes act as signposts for the robot to follow, thus obviating the need for a map or localization on the part of the robot. Navigation directions are computed within the network (not on the robot) using value iteration. Using small low-power radios, the robot communicates with nodes in the network locally, and makes navigation decisions based on which node it is near. An algorithm based on processing of radio signal strength data was developed so the robot could successfully decide which node neighborhood it belonged to. Extensive experiments with a robot and a sensor network confirm the validity of the approach.</td>
+</tr>
+<tr id="bib_Batalin2004" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@inproceedings{Batalin2004,
+  author = {Batalin, Maxim A and Sukhatme, Gaurav S and Hattig, Myron},
+  title = {Mobile robot navigation using a sensor network},
+  booktitle = {ICRA 2004: Proceedings of the 2004 IEEE International Conference on Robotics and Automation},
+  publisher = {IEEE Computer Society},
+  year = {2004},
+  pages = {636--641},
+  url = {http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=1307220},
+  doi = {http://dx.doi.org/10.1109/ROBOT.2004.1307220}
+}
+</pre></td>
+</tr>
+<tr id="Belker2001" class="entry">
+	<td>Belker, T. and Beetz, M.</td>
+	<td>Learning to execute navigation plans <p class="infolinks">[<a href="javascript:toggleInfo('Belker2001','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Belker2001','bibtex')">BibTeX</a>]</p></td>
+	<td>2001</td>
+	<td>KI 2001: Advances in Artificial Intelligence, pp. 425-439&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://www.springerlink.com/index/6RKBXMXGAKRK19TB.pdf">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Belker2001" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: Most state-of-the-art navigation systems for autonomous service robots decompose navigation into$nglobal navigation planning and local reactive navigation. While the methods for navigation planning$nand local navigation are well understood, the plan execution problem, the problem of how to$ngenerate and parameterize local navigation tasks from a given navigation plan, is largely unsolved.$nThis article describes how a robot can autonomously learn to execute navigation plans. We formalize$nthe problem as a Markov Decision Problem (MDP), discuss how it can be simplified to make its$nsolution feasible, and describe how the robot can acquire the necessary action models. We show,$nboth in simulation and on a RWI B21 mobile robot, that the learned models are able to produce$ncompetent navigation behavior.</td>
+</tr>
+<tr id="bib_Belker2001" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Belker2001,
+  author = {Belker, Thorsten and Beetz, Michael},
+  title = {Learning to execute navigation plans},
+  journal = {KI 2001: Advances in Artificial Intelligence},
+  year = {2001},
+  pages = {425--439},
+  url = {http://www.springerlink.com/index/6RKBXMXGAKRK19TB.pdf}
+}
+</pre></td>
+</tr>
+<tr id="DongshinKimJieSunSangMinOhJamesM.RehgAaronF.Bobick" class="entry">
+	<td>Bobick, D.K.J.S.S.M.O.J.M.R.A.F.</td>
+	<td>Traversability Classiﬁcation using Unsupervised On-line Visual Learning for Outdoor Robot Navigation <p class="infolinks">[<a href="javascript:toggleInfo('DongshinKimJieSunSangMinOhJamesM.RehgAaronF.Bobick','bibtex')">BibTeX</a>]</p></td>
+	<td></td>
+	<td>&nbsp;</td>
+	<td>inproceedings</td>
+	<td><a href="http://www.sangminoh.org/Publications\_files/Kim06icra.pdf">URL</a>&nbsp;</td>
+</tr>
+<tr id="bib_DongshinKimJieSunSangMinOhJamesM.RehgAaronF.Bobick" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@inproceedings{DongshinKimJieSunSangMinOhJamesM.RehgAaronF.Bobick,
+  author = {Bobick, Dongshin Kim Jie Sun Sang Min Oh James M. Rehg Aaron F.},
+  title = {Traversability Classiﬁcation using Unsupervised On-line Visual Learning for Outdoor Robot Navigation},
+  url = {http://www.sangminoh.org/Publicationsfiles/Kim06icra.pdf}
+}
+</pre></td>
+</tr>
+<tr id="Brenneke2003" class="entry">
+	<td>Brenneke, C., Wulf, O. and Wagner, B.</td>
+	<td>Using 3D laser range data for SLAM in outdoor environments <p class="infolinks">[<a href="javascript:toggleInfo('Brenneke2003','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Brenneke2003','bibtex')">BibTeX</a>]</p></td>
+	<td>2003</td>
+	<td><br/>Vol. 1Intelligent Robots and Systems, 2003. (IROS 2003). Proceedings. 2003 IEEE/RSJ International Conference on, pp. 188-193&nbsp;</td>
+	<td>inproceedings</td>
+	<td><a href="http://dx.doi.org/10.1109/IROS.2003.1250626">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Brenneke2003" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>:  Robot navigation in poorly structured and uneven outdoor environments$nis an unsolved problem. Thus we present a SLAM (simultaneous localization$nand mapping) approach that is based on "leveled range scans ". The$ncombines 3D perception with 2D localization and mapping. In this$nway established path planning and 2D navigation algorithms can be$nused in uneven terrain without the computational costs of full three$ndimensional modeling. The paper describes the processing steps data$nacquisition, obstacle segmentation, generation of leveled range scans$nand SLAM with these scans. Additionally, the paper shows experimental$nresults in man-made outdoor environments as they are typical for$nservice robots used by civilians.</td>
+</tr>
+<tr id="bib_Brenneke2003" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@inproceedings{Brenneke2003,
+  author = {Brenneke, C and Wulf, O and Wagner, B},
+  title = {Using 3D laser range data for SLAM in outdoor environments},
+  booktitle = {Intelligent Robots and Systems, 2003. (IROS 2003). Proceedings. 2003 IEEE/RSJ International Conference on},
+  year = {2003},
+  volume = {1},
+  pages = {188--193},
+  doi = {http://dx.doi.org/10.1109/IROS.2003.1250626}
+}
+</pre></td>
+</tr>
+<tr id="Castejon2008" class="entry">
+	<td>Castejon, C., Blanco, D. and Moreno, L.</td>
+	<td>Compact Modeling Technique for Outdoor Navigation <p class="infolinks">[<a href="javascript:toggleInfo('Castejon2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Castejon2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td>IEEE Transactions on Systems, Man, and Cybernetics - Part A: Systems and Humans<br/>Vol. 38(1)&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/TSMCA.2007.904786">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Castejon2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: In this paper, a new methodology to build compact local maps in real time for outdoor robot navigation is presented. The environment information is obtained from a 3-D scanner laser. The navigation model, which is called traversable region model, is based on a Voronoi diagram technique, but adapted to large outdoor environments. The model obtained with this methodology allows a definition of safe trajectories that depend on the robot's capabilities and the terrain properties, and it will represent, in a topogeometric way, the environment as local and global maps. The application presented is validated in real outdoor environments with the robot called GOLIAT.</td>
+</tr>
+<tr id="bib_Castejon2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Castejon2008,
+  author = {Castejon, C. and Blanco, D. and Moreno, L.},
+  title = {Compact Modeling Technique for Outdoor Navigation},
+  journal = {IEEE Transactions on Systems, Man, and Cybernetics - Part A: Systems and Humans},
+  year = {2008},
+  volume = {38},
+  number = {1},
+  doi = {http://dx.doi.org/10.1109/TSMCA.2007.904786}
+}
+</pre></td>
+</tr>
+<tr id="Chand2011" class="entry">
+	<td>Chand, A. and Yuta, S.</td>
+	<td>Navigation strategy and path planning for autonomous road crossing by outdoor mobile robots <p class="infolinks">[<a href="javascript:toggleInfo('Chand2011','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Chand2011','bibtex')">BibTeX</a>]</p></td>
+	<td>2011</td>
+	<td>2011 15th International Conference on Advanced Robotics (ICAR), pp. 161-167&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/ICAR.2011.6088588">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Chand2011" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper describes the navigation strategy and path planning methods for autonomous road crossing by outdoor mobile robots in urban environments. Road-crossing is the part of outdoor robot navigation when a robot, while traveling along pedestrian sidewalks, approaches an intersection or a road crossing and needs to autonomously cross to reach the intended destination. In this work, the robot first autonomously travels along pedestrian sidewalks. For this, instead of using a pre-supplied navigational map, we endow the robot with the level of autonomy required such that it can spontaneously detect sidewalks and perceive a trajectory to navigate. While traveling along this trajectory, the robot performs real time detection of pedestrian push-button boxes. If a button box is detected, the robot deviates from the original trajectory and autonomously navigates to it. Next, using the detected button box as a landmark, the robot approaches the pedestrian crossing. It finally performs vision-based detection of the zebra crossings and generates the trajectory required to cross the road at a green signal. We demonstrate these methods are feasible by performing experiments with a custom built outdoor mobile robot using experimental conditions based on an actual pedestrian crossing in our university campus.</td>
+</tr>
+<tr id="bib_Chand2011" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Chand2011,
+  author = {Chand, Aneesh and Yuta, Shin'ichi},
+  title = {Navigation strategy and path planning for autonomous road crossing by outdoor mobile robots},
+  journal = {2011 15th International Conference on Advanced Robotics (ICAR)},
+  publisher = {IEEE},
+  year = {2011},
+  pages = {161--167},
+  doi = {http://dx.doi.org/10.1109/ICAR.2011.6088588}
+}
+</pre></td>
+</tr>
+<tr id="Chen2007" class="entry">
+	<td>Chen, W.C.W., Mei, T.M.T., Liang, H.L.H., You, Z.Y.Z., Li, S.L.S. and Meng, M.-H.</td>
+	<td>Environment-Map-free Robot Navigation Based on Wireless Sensor Networks <p class="infolinks">[<a href="javascript:toggleInfo('Chen2007','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Chen2007','bibtex')">BibTeX</a>]</p></td>
+	<td>2007</td>
+	<td>2007 International Conference on Information Acquisition&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/ICIA.2007.4295797">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Chen2007" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: It's a new and good method to apply wireless sensor networks on robot navigation. We proposed an environment map free navigation for robot based on wireless sensor networks. In this system, the robot did not need to obtain the environment map and can get online navigation. The wireless sensor nodes collected environment and position information and made distributed information fusing to give a path for the robot. The robot then communicated with the wireless sensor network and went through following network's order. To combine the shorter path and the safer path, we proposed a navigation cost method for robot's navigation. It makes know by analysis that the environment map free navigation algorithm for robot in wireless sensor networks can achieve an online navigation and get highly precise navigation.</td>
+</tr>
+<tr id="bib_Chen2007" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Chen2007,
+  author = {Chen, Wanming Chen Wanming and Mei, Tao Mei Tao and Liang, Huawei Liang Huawei and You, Zhuhong You Zhuhong and Li, Shuai Li Shuai and Meng, M.Q.-H.},
+  title = {Environment-Map-free Robot Navigation Based on Wireless Sensor Networks},
+  journal = {2007 International Conference on Information Acquisition},
+  year = {2007},
+  doi = {http://dx.doi.org/10.1109/ICIA.2007.4295797}
+}
+</pre></td>
+</tr>
+<tr id="Dan2009" class="entry">
+	<td>Dan, Z.D.Z., Jisheng, Z.J.Z., Guohua, H.G.H. and Jie, Y.J.Y.</td>
+	<td>Navigation stabilization technology of mobile robot based on compass and gyro <p class="infolinks">[<a href="javascript:toggleInfo('Dan2009','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Dan2009','bibtex')">BibTeX</a>]</p></td>
+	<td>2009</td>
+	<td>2009 Chinese Control and Decision Conference&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/CCDC.2009.5192769">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Dan2009" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: When mobile robot navigated by line, it always deflected from the appointed direction. The navigation stabilization technology was researched based on sensors information of compass and gyro. The navigation stabilization control system model was developed based on robot kinematic model. The incremental PID method was designed for navigation stabilization. The navigation error was analyzed by simulation and experiment. Consequently, the control method was validated, and established foundation of robot application.</td>
+</tr>
+<tr id="bib_Dan2009" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Dan2009,
+  author = {Dan, Zou Dan Zou and Jisheng, Zhang Jisheng Zhang and Guohua, Han Guohua Han and Jie, Yang Jie Yang},
+  title = {Navigation stabilization technology of mobile robot based on compass and gyro},
+  journal = {2009 Chinese Control and Decision Conference},
+  year = {2009},
+  doi = {http://dx.doi.org/10.1109/CCDC.2009.5192769}
+}
+</pre></td>
+</tr>
+<tr id="Desouza2002" class="entry">
+	<td>Desouza, G. and Kak, A.</td>
+	<td>Vision for mobile robot navigation: a survey <p class="infolinks">[<a href="javascript:toggleInfo('Desouza2002','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Desouza2002','bibtex')">BibTeX</a>]</p></td>
+	<td>2002</td>
+	<td>IEEE Transactions on Pattern Analysis and Machine Intelligence<br/>Vol. 24(2)&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/34.982903">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Desouza2002" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: Surveys the developments of the last 20 years in the area of vision for mobile robot navigation. Two major components of the paper deal with indoor navigation and outdoor navigation. For each component, we have further subdivided our treatment of the subject on the basis of structured and unstructured environments. For indoor robots in structured environments, we have dealt separately with the cases of geometrical and topological models of space. For unstructured environments, we have discussed the cases of navigation using optical flows, using methods from the appearance-based paradigm, and by recognition of specific objects in the environment</td>
+</tr>
+<tr id="bib_Desouza2002" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Desouza2002,
+  author = {Desouza, G.N. and Kak, A.C.},
+  title = {Vision for mobile robot navigation: a survey},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  year = {2002},
+  volume = {24},
+  number = {2},
+  doi = {http://dx.doi.org/10.1109/34.982903}
+}
+</pre></td>
+</tr>
+<tr id="Garzon2013" class="entry">
+	<td>Garz&oacute;n, M., Valente, J.a., Zapata, D. and Barrientos, A.</td>
+	<td>An aerial&amp;8211;ground robotic system for navigation and obstacle mapping in large outdoor areas. <p class="infolinks">[<a href="javascript:toggleInfo('Garzon2013','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Garzon2013','bibtex')">BibTeX</a>]</p></td>
+	<td>2013</td>
+	<td>Sensors (Basel, Switzerland)<br/>Vol. 13(1), pp. 1247-67&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.3390/s130101247">DOI</a> <a href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=3574734\&tool=pmcentrez\&rendertype=abstract">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Garzon2013" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: There are many outdoor robotic applications where a robot must reach a goal position or explore an area without previous knowledge of the environment around it. Additionally, other applications (like path planning) require the use of known maps or previous information of the environment. This work presents a system composed by a terrestrial and an aerial robot that cooperate and share sensor information in order to address those requirements. The ground robot is able to navigate in an unknown large environment aided by visual feedback from a camera on board the aerial robot. At the same time, the obstacles are mapped in real-time by putting together the information from the camera and the positioning system of the ground robot. A set of experiments were carried out with the purpose of verifying the system applicability. The experiments were performed in a simulation environment and outdoor with a medium-sized ground robot and a mini quad-rotor. The proposed robotic system shows outstanding results in simultaneous navigation and mapping applications in large outdoor environments.</td>
+</tr>
+<tr id="bib_Garzon2013" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Garzon2013,
+  author = {Garz&oacute;n, Mario and Valente, Jo&atilde;o and Zapata, David and Barrientos, Antonio},
+  title = {An aerial&amp;8211;ground robotic system for navigation and obstacle mapping in large outdoor areas.},
+  journal = {Sensors (Basel, Switzerland)},
+  year = {2013},
+  volume = {13},
+  number = {1},
+  pages = {1247--67},
+  url = {http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=3574734&amp;tool=pmcentrez&amp;rendertype=abstract},
+  doi = {http://dx.doi.org/10.3390/s130101247}
+}
+</pre></td>
+</tr>
+<tr id="Giovannangeli2006" class="entry">
+	<td>Giovannangeli, C., Gaussier, P. and Desilles, G.</td>
+	<td>Robust Mapless Outdoor Vision-Based Navigation <p class="infolinks">[<a href="javascript:toggleInfo('Giovannangeli2006','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Giovannangeli2006','bibtex')">BibTeX</a>]</p></td>
+	<td>2006</td>
+	<td>2006 IEEE/RSJ International Conference on Intelligent Robots and Systems&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/IROS.2006.282501">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Giovannangeli2006" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This article presents an efficient and mature vision-based navigation algorithm based on sensory-motor learning. Neither Cartesian nor topological map are required, but a set of biologically inspired place cells. Each place cell defines a location by a spatial constellation of online learned landmarks. Their activity provides an internal measure of localization. A simple set of place-action associations enable a robot to go back to a learned location or to follow an arbitrary visual path. The system is able to achieve sensory-motor tasks in indoor as well as in large outdoor environments with similar computation load. The behavior is robust to kidnapping, object and landmark addition or removal, presence of mobile obstacles and severe visual field occlusions</td>
+</tr>
+<tr id="bib_Giovannangeli2006" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Giovannangeli2006,
+  author = {Giovannangeli, C. and Gaussier, P. and Desilles, G.},
+  title = {Robust Mapless Outdoor Vision-Based Navigation},
+  journal = {2006 IEEE/RSJ International Conference on Intelligent Robots and Systems},
+  year = {2006},
+  doi = {http://dx.doi.org/10.1109/IROS.2006.282501}
+}
+</pre></td>
+</tr>
+<tr id="Hara2008" class="entry">
+	<td>Hara, K., Maeyama, S. and Gofuku, A.</td>
+	<td>Navigation path scanning system for mobile robot by laser beam <p class="infolinks">[<a href="javascript:toggleInfo('Hara2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Hara2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td>2008 SICE Annual Conference&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/SICE.2008.4655144">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Hara2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: We propose the system for the mobile robot navigation with a laser source on the ceiling. At first, users make a navigation path which shows where the mobile robot should go. Base on the navigation path information, the laser spot is automatically irradiated to the ground. Then, the mobile robot detects the position of the laser spot by the optical sensor array and follows the trajectory of the laser spot. In this paper, we describe the scanning method of the navigation path that uses the laser.</td>
+</tr>
+<tr id="bib_Hara2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Hara2008,
+  author = {Hara, K. and Maeyama, S. and Gofuku, A.},
+  title = {Navigation path scanning system for mobile robot by laser beam},
+  journal = {2008 SICE Annual Conference},
+  year = {2008},
+  doi = {http://dx.doi.org/10.1109/SICE.2008.4655144}
+}
+</pre></td>
+</tr>
+<tr id="Irie2010" class="entry">
+	<td>Irie, K., Yoshida, T. and Tomono, M.</td>
+	<td>Mobile robot localization using stereo vision in outdoor environments under various illumination conditions <p class="infolinks">[<a href="javascript:toggleInfo('Irie2010','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Irie2010','bibtex')">BibTeX</a>]</p></td>
+	<td>2010</td>
+	<td>IEEE International Conference on Intelligent Robots and Systems, pp. 5175-5181&nbsp;</td>
+	<td>inproceedings</td>
+	<td><a href="http://dx.doi.org/10.1109/IROS.2010.5654401">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Irie2010" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper proposes a new localization method for outdoor navigation using a stereo camera only. Vision-based navigation in outdoor environments is still challenging because of large illumination changes. To cope with various illumination conditions, we use 2D occupancy grid maps generated from 3D point clouds obtained by a stereo camera. Furthermore, we incorporate salient line segments extracted from the ground into the grid maps. This grid map building is not much affected by illumination conditions. On the grid maps, the robot poses are estimated using a particle filter that combines visual odometry and map-matching. Experimental results showed the effectiveness and robustness of the proposed method under various weather and illumination conditions.</td>
+</tr>
+<tr id="bib_Irie2010" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@inproceedings{Irie2010,
+  author = {Irie, Kiyoshi and Yoshida, Tomoaki and Tomono, Masahiro},
+  title = {Mobile robot localization using stereo vision in outdoor environments under various illumination conditions},
+  booktitle = {IEEE International Conference on Intelligent Robots and Systems},
+  year = {2010},
+  pages = {5175--5181},
+  doi = {http://dx.doi.org/10.1109/IROS.2010.5654401}
+}
+</pre></td>
+</tr>
+<tr id="Katsura2003" class="entry">
+	<td>Katsura, H., Miura, J., Hild, M. and Shirai, Y.</td>
+	<td>A view-based outdoor navigation using object recognition robust to changes of weather and seasons <p class="infolinks">[<a href="javascript:toggleInfo('Katsura2003','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Katsura2003','bibtex')">BibTeX</a>]</p></td>
+	<td>2003</td>
+	<td>Proceedings 2003 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2003) (Cat. No.03CH37453)<br/>Vol. 3&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/IROS.2003.1249323">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Katsura2003" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>:  This paper describes a view-based outdoor navigation method. In the method, a user first guides a robot along a route. During this guided movement, the robot learns a sequence of images and a rough geometry of the route. The robot then moves autonomously along the route with localizing itself based on the comparison between the learned images and input images. Since appearances of objects in images may vary much according to changes of seasons and weather in outdoor scenes, a simple image comparison does not work. We, therefore, propose a comparison method in which the robot first recognizes objects in images using object models which allow for appearance variations, and then compares recognition results of learned and input images. We also developed a method which automatically selects key images used for the comparison from an image sequence. Successful autonomous navigation experiments in our campus under various conditions show the feasibility of the method.</td>
+</tr>
+<tr id="bib_Katsura2003" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Katsura2003,
+  author = {Katsura, H. and Miura, J. and Hild, M. and Shirai, Y.},
+  title = {A view-based outdoor navigation using object recognition robust to changes of weather and seasons},
+  journal = {Proceedings 2003 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2003) (Cat. No.03CH37453)},
+  year = {2003},
+  volume = {3},
+  doi = {http://dx.doi.org/10.1109/IROS.2003.1249323}
+}
+</pre></td>
+</tr>
+<tr id="Kim2006" class="entry">
+	<td>Kim, S.-H.K.S.-H., Roh, C.-W.R.C.-W., Kang, S.-C.K.S.-C. and Park, M.-Y.P.M.-Y.</td>
+	<td>A Hybrid Autonomous / Teleoperated Strategy for Reliable Mobile Robot Outdoor Navigation <p class="infolinks">[<a href="javascript:toggleInfo('Kim2006','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Kim2006','bibtex')">BibTeX</a>]</p></td>
+	<td>2006</td>
+	<td>2006 SICE-ICASE International Joint Conference&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/SICE.2006.314802">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Kim2006" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper demonstrates a reliable navigation strategy of a mobile robot teleoperated in outdoor environment. The navigation system for the teleoperated mobile robot consists of a mobile robot and a control station. The mobile robot sends the image data from a camera to the control station. The control station receives and displays the image data and the teleoperator commands the mobile robot based on the image data. Since the image data does not contain enough data for reliable teleoperation, a hybrid autonomous/teleoperated strategy for reliable mobile robot in outdoor environment is suggested. When the mobile robot is faced with unexpected obstacles or the situation that, if it follows the command, it can happen to collide, it sends a warning message to the teleoperator and changes the mode from teleoperated to autonomous to avoid the obstacles by itself. After avoiding the obstacles or the collision situation, the mode of the mobile robot is returned to teleoperated mode. And also, we fuse differential GPS and odometry data using the framework of extended Kalman filter to localize the mobile robot. We have been able to confirm that the appropriate change of navigation mode can help the teleoperator perform reliable navigation in outdoor environment through experiments in the roadway</td>
+</tr>
+<tr id="bib_Kim2006" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Kim2006,
+  author = {Kim, Seung-Hun Kim Seung-Hun and Roh, Chi-Won Roh Chi-Won and Kang, Sung-Chul Kang Sung-Chul and Park, Min-Yong Park Min-Yong},
+  title = {A Hybrid Autonomous / Teleoperated Strategy for Reliable Mobile Robot Outdoor Navigation},
+  journal = {2006 SICE-ICASE International Joint Conference},
+  year = {2006},
+  doi = {http://dx.doi.org/10.1109/SICE.2006.314802}
+}
+</pre></td>
+</tr>
+<tr id="Koceska2011" class="entry">
+	<td>Koceska, N., Koceski, S., Zobel, P.B. and Durante, F.</td>
+	<td>Advances in Robot Navigation <p class="infolinks">[<a href="javascript:toggleInfo('Koceska2011','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Koceska2011','bibtex')">BibTeX</a>]</p></td>
+	<td>2011</td>
+	<td>Computer, pp. 223-238&nbsp;</td>
+	<td>book</td>
+	<td>&nbsp;</td>
+</tr>
+<tr id="abs_Koceska2011" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: Integrates results from the research work on robot navigation from all over the world.</td>
+</tr>
+<tr id="bib_Koceska2011" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@book{Koceska2011,
+  author = {Koceska, Natasa and Koceski, Saso and Zobel, Pierluigi Beomonte and Durante, Francesco},
+  title = {Advances in Robot Navigation},
+  booktitle = {Computer},
+  publisher = {InTech},
+  year = {2011},
+  pages = {223--238}
+}
+</pre></td>
+</tr>
+<tr id="Konolige2008" class="entry">
+	<td>Konolige, K., Agrawal, M., Bolles, R., Cowan, C., Fischler, M. and Gerkey, B.</td>
+	<td>Outdoor Mapping and Navigation Using Stereo Vision <p class="infolinks">[<a href="javascript:toggleInfo('Konolige2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Konolige2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td>Experimental Robotics<br/>Vol. 39, pp. 179-190&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1007/978-3-540-77457-0\_17">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Konolige2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: We consider the problem of autonomous navigation in an unstructured outdoor environment. The goal is for a small outdoor robot to come into a new area, learn about and map its environment, and move to a given goal at modest speeds (1 m/s). This problem is especially difficult in outdoor, off-road environments, where tall grass, shadows, deadfall, and other obstacles predominate. Not surprisingly, the biggest challenge is acquiring and using a reliable map of the new area. Although work in outdoor navigation has preferentially used laser rangefinders [14,2,6], we use stereo vision as the main sensor. Vision sensors allow us to use more distant objects as landmarks for navigation, and to learn and use color and texture models of the environment, in looking further ahead than is possible with range sensors alone.</td>
+</tr>
+<tr id="bib_Konolige2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Konolige2008,
+  author = {Konolige, Kurt and Agrawal, Motilal and Bolles, Robert and Cowan, Cregg and Fischler, Martin and Gerkey, Brian},
+  title = {Outdoor Mapping and Navigation Using Stereo Vision},
+  journal = {Experimental Robotics},
+  publisher = {Springer Berlin Heidelberg},
+  year = {2008},
+  volume = {39},
+  pages = {179--190},
+  doi = {http://dx.doi.org/10.1007/978-3-540-77457-0\_17}
+}
+</pre></td>
+</tr>
+<tr id="Lacroix1997" class="entry">
+	<td>Lacroix, S. and Chatila, R.</td>
+	<td>Motion and Perception Strategies for Outdoor Mobile Robot Navigation in Unknown Environments <p class="infolinks">[<a href="javascript:toggleInfo('Lacroix1997','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Lacroix1997','bibtex')">BibTeX</a>]</p></td>
+	<td>1997</td>
+	<td>Experimental Robotics IV, pp. 538-547&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1007/BFb0035191">DOI</a> <a href="http://www.springerlink.com/index/5r3j883k1l8m5m73.pdf">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Lacroix1997" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper presents an experimented approach to autonomous robot navigation in an unknown natural environment. The approach involves several levels of reasoning, several environment representations, and three different motion modes. We focus on the navigation level of the whole system, which is in charge of reaching a distant goal by selecting sub-goals to reach, motion modes to apply, and perception tasks to execute for this purpose. We present how a terrain model dedicated to the navigation process is built on the 3D data acquired by the robot, and we describe an approach to tackle the difficult problem of planning perception and motion tasks. Experimental results on a realistic test site are presented and discussed.</td>
+</tr>
+<tr id="bib_Lacroix1997" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Lacroix1997,
+  author = {Lacroix, Simon and Chatila, Raja},
+  title = {Motion and Perception Strategies for Outdoor Mobile Robot Navigation in Unknown Environments},
+  journal = {Experimental Robotics IV},
+  publisher = {Springer},
+  year = {1997},
+  pages = {538--547},
+  url = {http://www.springerlink.com/index/5r3j883k1l8m5m73.pdf},
+  doi = {http://dx.doi.org/10.1007/BFb0035191}
+}
+</pre></td>
+</tr>
+<tr id="Lisboa2005" class="entry">
+	<td>Lisboa, D.E., Manuel, A. and Vale, M.</td>
+	<td>Mobile Robot Navigation in Outdoor Environments : A Topological Approach <p class="infolinks">[<a href="javascript:toggleInfo('Lisboa2005','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Lisboa2005','bibtex')">BibTeX</a>]</p></td>
+	<td>2005</td>
+	<td>Zywienie Czlowieka I Metabolizm&nbsp;</td>
+	<td>article</td>
+	<td>&nbsp;</td>
+</tr>
+<tr id="abs_Lisboa2005" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: The thesis addresses the problem of mobile robot navigation in outdoor environments and proposes methodologies based on a topological approach, concerning to three main issues: environment representation, localization and navigation. The selected approach, based on a mathematical support, has to solve the three main issues simultaneously. The motivation of the thesis is based on some cutting edges of the nature, where are millions of species with fantastic navigation capabilities, that retrieve the essential for life. For this purpose, complete algorithms were developed and tested in realistic scenarios with a real mobile robot. The main contributions of the thesis are the environment rep- resentation (a new topological representation, a set of notes defined by sum of Gaussians, connected by orientation), map building (a dynamic version of expectation and maximiza- tion algorithm), a probabilistic approach for localization and navigation (an optimized version of Forward-Backward algorithm) and feature extraction and selection (different types of feature extraction procedures with a selection criteria). The thesis concludes in a chapter describing the experimental results acquired by a real mobile robot, showing that the developed algorithms achieve the main goals proposed by a topological approach and a high level of abstraction. The main contribution provided in the thesis is the definition and demonstration of the applicability of mobile robot navigation in unstructured environments based on a high level of abstraction. This work is concerned on a search and rescue like project, “The Rescue Project - Cooperative Navigation for Rescue Robots”, where the main goal is to provide integrated solutions for the design of cooperative robots teams operating in outdoor environments.</td>
+</tr>
+<tr id="bib_Lisboa2005" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Lisboa2005,
+  author = {Lisboa, D E and Manuel, Alberto and Vale, Martinho},
+  title = {Mobile Robot Navigation in Outdoor Environments : A Topological Approach},
+  journal = {Zywienie Czlowieka I Metabolizm},
+  year = {2005}
+}
+</pre></td>
+</tr>
+<tr id="Maeyama1996" class="entry">
+	<td>Maeyama, S., Ohya, A. and Yuta, S.</td>
+	<td>Outdoor landmark map generation through human route teaching for mobile robot navigation <p class="infolinks">[<a href="javascript:toggleInfo('Maeyama1996','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Maeyama1996','bibtex')">BibTeX</a>]</p></td>
+	<td>1996</td>
+	<td>Proceedings of IEEE/RSJ International Conference on Intelligent Robots and Systems. IROS '96<br/>Vol. 2&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/IROS.1996.571079">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Maeyama1996" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: We present research on long distance outdoor navigation based on the estimated position for a mobile robot. We discuss the generation of the route map given to the robot in advance of autonomous navigation. We propose how the robot generates the route map including landmarks while a human operator takes it to the goal once. By our proposed method, it will be easy to make a large size route map for long distance outdoor navigation</td>
+</tr>
+<tr id="bib_Maeyama1996" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Maeyama1996,
+  author = {Maeyama, S. and Ohya, A. and Yuta, S.},
+  title = {Outdoor landmark map generation through human route teaching for mobile robot navigation},
+  journal = {Proceedings of IEEE/RSJ International Conference on Intelligent Robots and Systems. IROS '96},
+  year = {1996},
+  volume = {2},
+  doi = {http://dx.doi.org/10.1109/IROS.1996.571079}
+}
+</pre></td>
+</tr>
+<tr id="Miksik2011" class="entry">
+	<td>Miksik, O.</td>
+	<td>Road detection in an outdoor environment <p class="infolinks">[<a href="javascript:toggleInfo('Miksik2011','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Miksik2011','bibtex')">BibTeX</a>]</p></td>
+	<td>2011</td>
+	<td>(1)Electrical Engineering Information and Communication Technologies EEICT&nbsp;</td>
+	<td>inproceedings</td>
+	<td><a href="http://www.miksik.co.uk">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Miksik2011" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper deals with road detection in an outdoor environment. By comparison with preceding approaches, which use various sensors, our system uses only a monocular camera. In this paper, we propose a novel approach - a fusion of frequency based vanishing point estimation and probabilistically based color segmentation.</td>
+</tr>
+<tr id="bib_Miksik2011" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@inproceedings{Miksik2011,
+  author = {Miksik, Ondrej},
+  title = {Road detection in an outdoor environment},
+  booktitle = {Electrical Engineering Information and Communication Technologies EEICT},
+  year = {2011},
+  number = {1},
+  url = {http://www.miksik.co.uk}
+}
+</pre></td>
+</tr>
+<tr id="Milford2008" class="entry">
+	<td>Milford, M.</td>
+	<td>Robot navigation from nature <p class="infolinks">[<a href="javascript:toggleInfo('Milford2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Milford2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td><br/>Vol. 41Springer Tracts in Advanced Robotics, pp. 196&nbsp;</td>
+	<td>book</td>
+	<td><a href="http://dx.doi.org/10.1007/978-3-540-77520-1">DOI</a> <a href="http://scholar.google.com/scholar?hl=en\&btnG=Search\&q=intitle:Robot+Navigation+from+Nature\#0">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Milford2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This book describes the development of a robot mapping and navigation system inspired by models of the neural mechanisms underlying spatial navigation in the rodent hippocampus. Computational models of animal navigation systems have traditionally had limited performance when implemented on robots. The aim of the work was to determine the extent to which hippocampal models can be used to provide a robot with functional mapping and navigation capabilities in real world environments. The focus of the research was on achieving practical robot performance, rather than maintaining biological plausibility.</td>
+</tr>
+<tr id="bib_Milford2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@book{Milford2008,
+  author = {Milford, M.J.},
+  title = {Robot navigation from nature},
+  booktitle = {Springer Tracts in Advanced Robotics},
+  publisher = {Springer-Verlag},
+  year = {2008},
+  volume = {41},
+  pages = {196},
+  url = {http://scholar.google.com/scholar?hl=en&amp;btnG=Search&amp;q=intitle:Robot+Navigation+from+Nature0},
+  doi = {http://dx.doi.org/10.1007/978-3-540-77520-1}
+}
+</pre></td>
+</tr>
+<tr id="Misono2007" class="entry">
+	<td>Misono, Y., Goto, Y., Tarutoko, Y., Kobayashi, K. and Watanabe, K.</td>
+	<td>Development of laser rangefinder-based SLAM algorithm for mobile robot navigation <p class="infolinks">[<a href="javascript:toggleInfo('Misono2007','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Misono2007','bibtex')">BibTeX</a>]</p></td>
+	<td>2007</td>
+	<td>SICE Annual Conference 2007&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/SICE.2007.4421015">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Misono2007" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper describes a new implementation of the SLAM algorithm for a mobile robot operating in an outdoor environment such as the IGVC Navigation Challenge, using relative obstacle observation profile from laser rangefinder. The proposed SLAM is possible for the mobile robot to start in an unknown location in an unknown environment and, using relative observations only, incrementally build a perfect map of the world and to compute simultaneously a bounded estimate of mobile robot location by the extended Kalman filter. To confirm the proposed SLAM method, an electric wheelchair based mobile robot is used for implementation and testing.</td>
+</tr>
+<tr id="bib_Misono2007" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Misono2007,
+  author = {Misono, Y. and Goto, Y. and Tarutoko, Y. and Kobayashi, K. and Watanabe, K.},
+  title = {Development of laser rangefinder-based SLAM algorithm for mobile robot navigation},
+  journal = {SICE Annual Conference 2007},
+  year = {2007},
+  doi = {http://dx.doi.org/10.1109/SICE.2007.4421015}
+}
+</pre></td>
+</tr>
+<tr id="Morales2009" class="entry">
+	<td>Morales, Y., Carballo, A., Takeuchi, E., Aburadani, A. and Tsubouchi, T.</td>
+	<td>Autonomous Robot Navigation in Outdoor Cluttered Pedestrian Walkways <p class="infolinks">[<a href="javascript:toggleInfo('Morales2009','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Morales2009','bibtex')">BibTeX</a>]</p></td>
+	<td>2009</td>
+	<td>Journal of Field Robotics<br/>Vol. 26(8), pp. 609-635&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1002/rob.20301">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Morales2009" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper describes an implementation of a mobile robot system for autonomous navigation in outdoor Concurred walkways. The task was to navigate through nonmodified pedestrian paths with people and bicycles passing by. The robot has multiple redundant sensors, which include wheel encoders, all intertial measurement unit, a differential global positioning system, and four laser scanner sensors. All the computation was done oil a Single laptop computer. A previously constructed map containing waypoints and landmarks for position correction is given to the robot. The robot system's perception, road extraction, and motion planning are detailed. The system was used and tested in a 1-km autonomous robot navigation challenge held in the City of Tsukuba, Japan, named "Tsukuba Challenge 2007." The proposed approach proved to be robust for Outdoor navigation in Cluttered and crowded walkways, first oil campus paths and then running the challenge course multiple times between trials and the challenge final. The paper reports experimental results and overall performance of the system. Finally the lessons learned are discussed. The main contribution of this work is the report of a system integration approach for autonomous outdoor navigation and its evaluation. (C) Wiley Periodicals, Inc.</td>
+</tr>
+<tr id="bib_Morales2009" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Morales2009,
+  author = {Morales, Y and Carballo, A and Takeuchi, E and Aburadani, A and Tsubouchi, T},
+  title = {Autonomous Robot Navigation in Outdoor Cluttered Pedestrian Walkways},
+  journal = {Journal of Field Robotics},
+  year = {2009},
+  volume = {26},
+  number = {8},
+  pages = {609--635},
+  doi = {http://dx.doi.org/10.1002/rob.20301}
+}
+</pre></td>
+</tr>
+<tr id="Neufeld2008" class="entry">
+	<td>Neufeld, J., Sokolsky, M., Roberts, J., Milstein, A., Walsh, S. and Bowling, M.H.</td>
+	<td>Autonomous Geocaching : Navigation and Goal Finding in Outdoor Domains <p class="infolinks">[<a href="javascript:toggleInfo('Neufeld2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Neufeld2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td>(Aamas)Proc. of 7th Int. Conf. on Autonomous Agents and Multiagent Systems (AAMAS 2008), pp. 47-54&nbsp;</td>
+	<td>inproceedings</td>
+	<td><a href="http://dx.doi.org/10.1145/1402383.1402395">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Neufeld2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper describes an autonomous robot system designed to solve the challenging task of geocaching. Geocaching involves locating a goal object in an outdoor environment given only its rough GPS position. No additional informa- tion about the environment such as road maps, waypoints, or obstacle descriptions is provided, nor is there often a sim- ple straight line path to the object. This is in contrast to much of the research in robot navigation which often focuses on common structural features, e.g., road following, curb avoidance, or indoor navigation. In addition, uncertainty in GPS positions requires a final local search of the target area after completing the challenging navigation problem. We describe a relatively simple robotic system for completing this task. This system addresses three main issues: building a map from raw sensor readings, navigating to the target region, and searching for the target object. We demonstrate the effectiveness of this system in a variety of complex outdoor environments and compare our system’s performance to that of a human expert teleoperating the robot.</td>
+</tr>
+<tr id="bib_Neufeld2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@inproceedings{Neufeld2008,
+  author = {Neufeld, James and Sokolsky, Michael and Roberts, Jason and Milstein, Adam and Walsh, Stephen and Bowling, Michael H},
+  title = {Autonomous Geocaching : Navigation and Goal Finding in Outdoor Domains},
+  booktitle = {Proc. of 7th Int. Conf. on Autonomous Agents and Multiagent Systems (AAMAS 2008)},
+  year = {2008},
+  number = {Aamas},
+  pages = {47--54},
+  doi = {http://dx.doi.org/10.1145/1402383.1402395}
+}
+</pre></td>
+</tr>
+<tr id="Ohnishi2013" class="entry">
+	<td>Ohnishi, N. and Imiya, A.</td>
+	<td>Appearance-based navigation and homing for autonomous mobile robot <p class="infolinks">[<a href="javascript:toggleInfo('Ohnishi2013','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Ohnishi2013','bibtex')">BibTeX</a>]</p></td>
+	<td>2013</td>
+	<td>Image and Vision Computing<br/>Vol. 31(6-7), pp. 511-532&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1016/j.imavis.2012.11.004">DOI</a> <a href="http://linkinghub.elsevier.com/retrieve/pii/S0262885612002120">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Ohnishi2013" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: In this paper, we develop an algorithm for navigating a mobile robot using the visual potential. The visual potential is computed from an image sequence and optical flow computed from successive images captured by a camera mounted on the robot, that is, the visual potential for navigation is computed from appearances of the workspace observed as an image sequence. The direction to the destination is provided at the initial position of the robot. The robot dynamically selects a local pathway to the destination without collision with obstacles and without any knowledge of the robot workspace. Furthermore, the guidance algorithm to destination allows the mobile robot to return from the destination to the initial position. We present the experimental results of navigation and homing in synthetic and real environments.</td>
+</tr>
+<tr id="bib_Ohnishi2013" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Ohnishi2013,
+  author = {Ohnishi, Naoya and Imiya, Atsushi},
+  title = {Appearance-based navigation and homing for autonomous mobile robot},
+  journal = {Image and Vision Computing},
+  publisher = {Elsevier B.V.},
+  year = {2013},
+  volume = {31},
+  number = {6-7},
+  pages = {511--532},
+  url = {http://linkinghub.elsevier.com/retrieve/pii/S0262885612002120},
+  doi = {http://dx.doi.org/10.1016/j.imavis.2012.11.004}
+}
+</pre></td>
+</tr>
+<tr id="Ohno2003" class="entry">
+	<td>Ohno, K., Tsubouchi, T., Shigematsu, B., Maeyama, S. and Yuta, S.</td>
+	<td>Outdoor navigation of a mobile robot between buildings based on DGPS and odometry data fusion <p class="infolinks">[<a href="javascript:toggleInfo('Ohno2003','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Ohno2003','bibtex')">BibTeX</a>]</p></td>
+	<td>2003</td>
+	<td>2003 IEEE International Conference on Robotics and Automation (Cat. No.03CH37422)<br/>Vol. 2&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/ROBOT.2003.1241884">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Ohno2003" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>:  The authors aim at map based outdoor navigation of a mobile robot. In navigation, robot position is fundamentally obtained by odometry. However, the position is misaligned as the robot moves because odometry has cumulative error. DGPS measurement data may cancel its position error. The framework of EKF is used for the modification and the fusion between odometry and DGPS measurement data. The DGPS measurement data, however, could have large error because of multipath near buildings. In this paper, the authors propose a method which eliminates erroneous DGPS measurement data when odometry robot position is fused, and confirm the validity of this approach.</td>
+</tr>
+<tr id="bib_Ohno2003" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Ohno2003,
+  author = {Ohno, K. and Tsubouchi, T. and Shigematsu, B. and Maeyama, S. and Yuta, S.},
+  title = {Outdoor navigation of a mobile robot between buildings based on DGPS and odometry data fusion},
+  journal = {2003 IEEE International Conference on Robotics and Automation (Cat. No.03CH37422)},
+  year = {2003},
+  volume = {2},
+  doi = {http://dx.doi.org/10.1109/ROBOT.2003.1241884}
+}
+</pre></td>
+</tr>
+<tr id="Pivtoraiko2009" class="entry">
+	<td>Pivtoraiko, M., a.D. Nesnas, I. and Kelly, A.</td>
+	<td>Autonomous robot navigation using advanced motion primitives <p class="infolinks">[<a href="javascript:toggleInfo('Pivtoraiko2009','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Pivtoraiko2009','bibtex')">BibTeX</a>]</p></td>
+	<td>2009</td>
+	<td>In: Proc. IEEE Aerospace conference&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/AERO.2009.4839309">DOI</a> <a href="http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=4839309">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Pivtoraiko2009" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: A conventional approach to designing the local planner in this setting is to evaluate a fixed number of constant-curvature arc motions and pick one that is the best balance between the quality of obstacle avoidance and minimizing traversed path length to the goal.</td>
+</tr>
+<tr id="bib_Pivtoraiko2009" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Pivtoraiko2009,
+  author = {Pivtoraiko, Mihail and a.D. Nesnas, Issa and Kelly, Alonzo},
+  title = {Autonomous robot navigation using advanced motion primitives},
+  journal = {In: Proc. IEEE Aerospace conference},
+  publisher = {Ieee},
+  year = {2009},
+  url = {http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=4839309},
+  doi = {http://dx.doi.org/10.1109/AERO.2009.4839309}
+}
+</pre></td>
+</tr>
+<tr id="Procopio2007" class="entry">
+	<td>Procopio, M., Mulligan, J. and Grudic, G.</td>
+	<td>Long-Term learning using multiple models for outdoor autonomous robot navigation <p class="infolinks">[<a href="javascript:toggleInfo('Procopio2007','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Procopio2007','bibtex')">BibTeX</a>]</p></td>
+	<td>2007</td>
+	<td>2007 IEEE/RSJ International Conference on Intelligent Robots and Systems&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/IROS.2007.4399583">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Procopio2007" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: Autonomous robot navigation in unstructured outdoor environments is a challenging area of active research. The navigation task requires identifying safe, traversable paths which allow the robot to progress toward a goal while avoiding obstacles. One approach is to apply Machine Learning techniques that accomplish near to far learning by augmenting near-field Stereo to identify safe terrain and obstacles in the far field. Some mechanism for applying past learned experience to the active navigation task is crucial for effective far-field classification. We introduce a new method for long-term learning in the robot navigation task by selecting a subset of previously learned linear binary classifiers. We then combine their output to produce a final classification for a new image. Techniques for efficient selection of models, as well as the combination of their output, are addressed. We evaluate the performance of our technique on three fully labeled datasets, and show that our technique outperforms several baseline techniques that do not leverage past experience.</td>
+</tr>
+<tr id="bib_Procopio2007" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Procopio2007,
+  author = {Procopio, M.J. and Mulligan, J. and Grudic, G.},
+  title = {Long-Term learning using multiple models for outdoor autonomous robot navigation},
+  journal = {2007 IEEE/RSJ International Conference on Intelligent Robots and Systems},
+  year = {2007},
+  doi = {http://dx.doi.org/10.1109/IROS.2007.4399583}
+}
+</pre></td>
+</tr>
+<tr id="Sato2008" class="entry">
+	<td>Sato, N., Mizumoto, H., Shiroma, N., Inami, M. and Matsuno, F.</td>
+	<td>Touch-pen interface with local environment map for mobile robot navigation <p class="infolinks">[<a href="javascript:toggleInfo('Sato2008','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Sato2008','bibtex')">BibTeX</a>]</p></td>
+	<td>2008</td>
+	<td>2008 SICE Annual Conference&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/SICE.2008.4654924">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Sato2008" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: In this paper, we propose a robot navigation interface using a touch-pen. Generally, the global map building and position estimation are very difficult in the disaster site. In the proposed system, local sensory information is mainly used for the robot navigation. The local environment map is displayed for a robot operator, and the operator inputs the goal point on the map for the robot navigation. The desired trajectory and velocity are calculated according to the operatorpsilas command and then the robot automatically moves to the goal position.</td>
+</tr>
+<tr id="bib_Sato2008" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Sato2008,
+  author = {Sato, N. and Mizumoto, H. and Shiroma, N. and Inami, M. and Matsuno, F.},
+  title = {Touch-pen interface with local environment map for mobile robot navigation},
+  journal = {2008 SICE Annual Conference},
+  year = {2008},
+  doi = {http://dx.doi.org/10.1109/SICE.2008.4654924}
+}
+</pre></td>
+</tr>
+<tr id="Sim2003" class="entry">
+	<td>Sim, P., Sacco, V., Virk, G. and Wang, X.W.X.</td>
+	<td>Robot navigation in volcanic environments <p class="infolinks">[<a href="javascript:toggleInfo('Sim2003','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Sim2003','bibtex')">BibTeX</a>]</p></td>
+	<td>2003</td>
+	<td>Proceedings of the 2003 IEEE International Conference on Intelligent Transportation Systems<br/>Vol. 2&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/ITSC.2003.1252638">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Sim2003" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>:  This paper explains the background to the Robovolc volcano exploration robot and details the development of the autonomous navigation system. The treatment of the navigation system includes analysis of the volcanic terrain, description of the robot's sensors, the robot navigation drivers and explains the development of the navigation tactics and system structure.</td>
+</tr>
+<tr id="bib_Sim2003" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Sim2003,
+  author = {Sim, P. and Sacco, V. and Virk, G.S. and Wang, Xunxian Wang Xunxian},
+  title = {Robot navigation in volcanic environments},
+  journal = {Proceedings of the 2003 IEEE International Conference on Intelligent Transportation Systems},
+  year = {2003},
+  volume = {2},
+  doi = {http://dx.doi.org/10.1109/ITSC.2003.1252638}
+}
+</pre></td>
+</tr>
+<tr id="Sofman2009" class="entry">
+	<td>Sofman, B.</td>
+	<td>Online Learning Techniques for Improving Robot Navigation in Unfamiliar Domains <p class="infolinks">[<a href="javascript:toggleInfo('Sofman2009','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Sofman2009','bibtex')">BibTeX</a>]</p></td>
+	<td>2009</td>
+	<td>cs.cmu.edu&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://www.cs.cmu.edu/~bsofman/Sofman\_thesis\_proposal.pdf$\backslash$nfile://localhost/Users/ckleung22/Documents/Papers/2009/Sofman/cs.cmu.edu 2009 Sofman.pdf$\backslash$npapers://b9ae0c16-89b5-40a7-afd2-7426cd331529/Paper/p366">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Sofman2009" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: Page 1. for Improving Robot Navigation in Unfamiliar Domains Boris Sofman April 27, 2009 Robotics Institute </td>
+</tr>
+<tr id="bib_Sofman2009" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Sofman2009,
+  author = {Sofman, B},
+  title = {Online Learning Techniques for Improving Robot Navigation in Unfamiliar Domains},
+  journal = {cs.cmu.edu},
+  year = {2009},
+  url = {http://www.cs.cmu.edu/~bsofman/Sofmanthesisproposal.pdf$nfile://localhost/Users/ckleung22/Documents/Papers/2009/Sofman/cs.cmu.edu 2009 Sofman.pdf$npapers://b9ae0c16-89b5-40a7-afd2-7426cd331529/Paper/p366}
+}
+</pre></td>
+</tr>
+<tr id="Teimoori2009" class="entry">
+	<td>Teimoori, H. and Savkin, A.</td>
+	<td>Equiangular navigation guidance of a wheeled mobile robot with local obstacle avoidance <p class="infolinks">[<a href="javascript:toggleInfo('Teimoori2009','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Teimoori2009','bibtex')">BibTeX</a>]</p></td>
+	<td>2009</td>
+	<td>2008 IEEE International Conference on Robotics and Biomimetics&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/ROBIO.2009.4913301">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Teimoori2009" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: We consider the problem of navigation of wheeled mobile robot (WMR) towards an unknown target in a cluttered environment. The biologically inspired navigation algorithm is the equiangular navigation guidance (ENG) combined with a local obstacle avoidance technique. The collision avoidance technique uses a system of active sensors which provides the necessary information about the obstacles in the vicinity of the robot. In order for the robot to avoid collision and bypass the enroute obstacles, the angle between the instantaneous moving direction of the robot and a reference point on the surface of the obstacle is kept constant. The performance of the navigation strategy is confirmed with computer simulations and experiments with Active Media Pioneer 3-DX wheeled robot.</td>
+</tr>
+<tr id="bib_Teimoori2009" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Teimoori2009,
+  author = {Teimoori, H. and Savkin, A.V.},
+  title = {Equiangular navigation guidance of a wheeled mobile robot with local obstacle avoidance},
+  journal = {2008 IEEE International Conference on Robotics and Biomimetics},
+  year = {2009},
+  doi = {http://dx.doi.org/10.1109/ROBIO.2009.4913301}
+}
+</pre></td>
+</tr>
+<tr id="Valavanis2006" class="entry">
+	<td>Valavanis, K., Doitsidis, L., Long, M. and Murphy, R.</td>
+	<td>A case study of fuzzy-logic-based robot navigation <p class="infolinks">[<a href="javascript:toggleInfo('Valavanis2006','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Valavanis2006','bibtex')">BibTeX</a>]</p></td>
+	<td>2006</td>
+	<td>IEEE Robotics &amp; Automation Magazine<br/>Vol. 13(3)&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/MRA.2006.1678143">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Valavanis2006" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper describes a multilayer, hybrid, distributed field robot architecture (DFRA) and its integration with MATLAB that is capable of supporting simple and complex functionality of heterogeneous teams of robot systems. This architecture was used to demonstrate multisensor mobile robot fuzzy-logic-based navigation in outdoor environments</td>
+</tr>
+<tr id="bib_Valavanis2006" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Valavanis2006,
+  author = {Valavanis, K.P. and Doitsidis, L. and Long, M. and Murphy, R.R.},
+  title = {A case study of fuzzy-logic-based robot navigation},
+  journal = {IEEE Robotics &amp; Automation Magazine},
+  year = {2006},
+  volume = {13},
+  number = {3},
+  doi = {http://dx.doi.org/10.1109/MRA.2006.1678143}
+}
+</pre></td>
+</tr>
+<tr id="WANG2010" class="entry">
+	<td>WANG, J., HU, S., ZHANG, X. and CHEN, W.</td>
+	<td>Mobile Robot Localization in Outdoor Environments Based on Near-infrared Vision <p class="infolinks">[<a href="javascript:toggleInfo('WANG2010','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('WANG2010','bibtex')">BibTeX</a>]</p></td>
+	<td>2010</td>
+	<td><br/>Vol. 32(1)ROBOT, pp. 97-103&nbsp;</td>
+	<td>misc</td>
+	<td><a href="http://dx.doi.org/10.3724/SP.J.1218.2010.00097">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_WANG2010" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: A self-localization system based on near-infrared vision and bar-coded landmarks for robot navigating in outdoor environment with variable light conditions and electromagnetic interference is presented. The near-infrared illuminator and omni-directional vision are used for recognizing bar-coded landmarks. Data from vision system and odometry are fused with an extended Kalman filter (EKF) to realize robot self-localization. The experiment result demonstrates that the proposed method eliminates the effect of light variations on robot localization in outdoor long-range navigation.</td>
+</tr>
+<tr id="bib_WANG2010" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@misc{WANG2010,
+  author = {WANG, Jingchuan and HU, Shiyu and ZHANG, Xu and CHEN, Weidong},
+  title = {Mobile Robot Localization in Outdoor Environments Based on Near-infrared Vision},
+  booktitle = {ROBOT},
+  year = {2010},
+  volume = {32},
+  number = {1},
+  pages = {97--103},
+  doi = {http://dx.doi.org/10.3724/SP.J.1218.2010.00097}
+}
+</pre></td>
+</tr>
+<tr id="Wang2013" class="entry">
+	<td>Wang, Y., Yang, F.b., Wang, T., Liu, Q. and Xu, X.</td>
+	<td>Research on visual navigation and remote monitoring technology of agricultural robot <p class="infolinks">[<a href="javascript:toggleInfo('Wang2013','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Wang2013','bibtex')">BibTeX</a>]</p></td>
+	<td>2013</td>
+	<td>International Journal on Smart Sensing and Intelligent Systems<br/>Vol. 6(2), pp. 466-481&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://www.scopus.com/inward/record.url?eid=2-s2.0-84878953129\&partnerID=40\&md5=347be6b1edbb755c1774cca28a03d217">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Wang2013" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: To solve the problems of instability of agricultural robot when avoiding obstacles, a kind of navigation method which combined monocular visual navigation technology and remote monitoring technology was proposed: using the centerline method to extract the navigation path to achieve visual navigation; the monitoring center received two-way real-time image signals of the agricultural robot, when the agricultural robot met the obstacle or other situations, the remote monitoring center would start the alarm, then the operators could send control signals through the monitoring software to implement manual intervention. The experiment showed that the system improved the reliability of the navigation.</td>
+</tr>
+<tr id="bib_Wang2013" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Wang2013,
+  author = {Wang, Y.a and Yang, F.a b and Wang, T.a and Liu, Q.c and Xu, X.a},
+  title = {Research on visual navigation and remote monitoring technology of agricultural robot},
+  journal = {International Journal on Smart Sensing and Intelligent Systems},
+  year = {2013},
+  volume = {6},
+  number = {2},
+  pages = {466--481},
+  url = {http://www.scopus.com/inward/record.url?eid=2-s2.0-84878953129&amp;partnerID=40&amp;md5=347be6b1edbb755c1774cca28a03d217}
+}
+</pre></td>
+</tr>
+<tr id="Wedeward1999" class="entry">
+	<td>Wedeward, K., Bruder, S., Yodaiken, T. and Guilberto, J.</td>
+	<td>Low-cost outdoor mobile robot: a platform for landmine detection <p class="infolinks">[<a href="javascript:toggleInfo('Wedeward1999','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Wedeward1999','bibtex')">BibTeX</a>]</p></td>
+	<td>1999</td>
+	<td>42nd Midwest Symposium on Circuits and Systems (Cat. No.99CH36356)<br/>Vol. 1&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/MWSCAS.1999.867226">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Wedeward1999" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: This paper considers the problem of developing a low-cost, rugged, outdoor mobile robot to serve as a landmine detection platform. The proposed solution consists of a simple four-wheel-drive skid-steer chassis, a low-cost multi-sensor navigation system, proximity sensors, and computers operating under the real-time (RT) Linux and Windows 95 operating systems</td>
+</tr>
+<tr id="bib_Wedeward1999" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Wedeward1999,
+  author = {Wedeward, K. and Bruder, S. and Yodaiken, T. and Guilberto, J.},
+  title = {Low-cost outdoor mobile robot: a platform for landmine detection},
+  journal = {42nd Midwest Symposium on Circuits and Systems (Cat. No.99CH36356)},
+  year = {1999},
+  volume = {1},
+  doi = {http://dx.doi.org/10.1109/MWSCAS.1999.867226}
+}
+</pre></td>
+</tr>
+<tr id="Welch2006" class="entry">
+	<td>Welch, G. and Bishop, G.</td>
+	<td>An Introduction to the Kalman Filter <p class="infolinks">[<a href="javascript:toggleInfo('Welch2006','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Welch2006','bibtex')">BibTeX</a>]</p></td>
+	<td>2006</td>
+	<td>In Practice<br/>Vol. 7(1), pp. 1-16&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1.1.117.6808">DOI</a> <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.79.6578\&amp;rep=rep1\&amp;type=pdf">URL</a>&nbsp;</td>
+</tr>
+<tr id="abs_Welch2006" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: In 1960, R.E. Kalman published his famous paper describing a recursive solution to the discrete-data linear filtering problem. Since that time, due in large part to advances in digital computing, the Kalman filter has been the subject of extensive research and application, particularly in the area of autonomous or assisted navigation. The Kalman filter is a set of mathematical equations that provides an efficient computational (recursive) means to estimate the state of a process, in a way that minimizes the mean of the squared error. The filter is very powerful in several aspects: it supports estimations of past, present, and even future states, and it can do so even when the precise nature of the modeled system is unknown. The purpose of this paper is to provide a practical introduction to the discrete Kalman filter. This introduction includes a description and some discussion of the basic discrete Kalman filter, a derivation, description and some discussion of the extended Kalman filter, and a relatively simple (tangible) example with real numbers &amp; results.</td>
+</tr>
+<tr id="bib_Welch2006" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Welch2006,
+  author = {Welch, Greg and Bishop, Gary},
+  title = {An Introduction to the Kalman Filter},
+  journal = {In Practice},
+  publisher = {Citeseer},
+  year = {2006},
+  volume = {7},
+  number = {1},
+  pages = {1--16},
+  url = {http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.79.6578&amp;amp;rep=rep1&amp;amp;type=pdf},
+  doi = {http://dx.doi.org/10.1.1.117.6808}
+}
+</pre></td>
+</tr>
+<tr id="Zalama2002" class="entry">
+	<td>Zalama, E., Gomez, J., Paul, M. and Peran, J.</td>
+	<td>Adaptive behavior navigation of a mobile robot <p class="infolinks">[<a href="javascript:toggleInfo('Zalama2002','abstract')">Abstract</a>] [<a href="javascript:toggleInfo('Zalama2002','bibtex')">BibTeX</a>]</p></td>
+	<td>2002</td>
+	<td>IEEE Transactions on Systems, Man, and Cybernetics - Part A: Systems and Humans<br/>Vol. 32(1)&nbsp;</td>
+	<td>article</td>
+	<td><a href="http://dx.doi.org/10.1109/3468.995537">DOI</a> &nbsp;</td>
+</tr>
+<tr id="abs_Zalama2002" class="abstract noshow">
+	<td colspan="6"><b>Abstract</b>: Describes a neural network model for the reactive behavioral navigation of a mobile robot. From the information received through the sensors the robot can elicit one of several behaviors (e.g., stop, avoid, stroll, wall following), through a competitive neural network. The robot is able to develop a control strategy depending on sensor information and learning operation. Reinforcement learning improves the navigation of the robot by adapting the eligibility of the behaviors and determining the linear and angular robot velocities</td>
+</tr>
+<tr id="bib_Zalama2002" class="bibtex noshow">
+<td colspan="6"><b>BibTeX</b>:
+<pre>
+@article{Zalama2002,
+  author = {Zalama, E. and Gomez, J. and Paul, M. and Peran, J.R.},
+  title = {Adaptive behavior navigation of a mobile robot},
+  journal = {IEEE Transactions on Systems, Man, and Cybernetics - Part A: Systems and Humans},
+  year = {2002},
+  volume = {32},
+  number = {1},
+  doi = {http://dx.doi.org/10.1109/3468.995537}
+}
+</pre></td>
+</tr>
+</tbody>
+</table>
+<footer>
+ <small>Created by <a href="http://jabref.sourceforge.net">JabRef</a> on 30/10/2013.</small>
+</footer>
+<!-- file generated by JabRef -->
+</body>
+</html>

@@ -1,0 +1,136 @@
+top 15
+=====The role of robotic modelling in cognitive science =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Biomimetics—using nature to inspire human innovation =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Neuromorphic and Brain-Based Robots =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====A Basis for Cognitive Machines =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====A robotics-based approach to modeling of choice reaching experiments on visual attention =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Biologically inspired approaches to robotics: what can we learn from insects? =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Socially intelligent robots =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Biologically inspired intelligent robots using artificial muscles =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Self-Organization, Embodiment, and Biologically Inspired Robotics =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Neural 'bubble' dynamics in two dimensions: foundations =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====You can’t play 20 questions with nature and win: Projective comments on papers of this symposium =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Toward robotic cars =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Results for outdoor-SLAM using sparse extended information filters =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====RatSLAM: a hippocampal model for simultaneous localization and mapping	=====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----
+=====Learning spatial concepts from RatSLAM representations =====
+'''Authors: '''
+'''Reference info: '''
+'''Keywords: '''
+'''Citations: '''
+'''Abstract: '''
+'''Reading Report: '''
+'''Comments and Summary: '''
+-----

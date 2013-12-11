@@ -1,0 +1,253 @@
+top 16-30
+===== Spatial cognition for robots =====
+'''Authors: ''' Wyeth, G. and Milford, M.
+
+'''Reference info: ''' Vol. 16(3)IEEE Robotics Automation Magazine, pp. 24-32, 2009
+http://dx.doi.org/10.1109/MRA.2009.933620
+
+'''Keywords: '''
+
+'''Citations: '''
+
+'''Abstract: '''
+
+The paper discusses robot navigation from biological inspiration. The authors sought to build a model of the rodent brain that is suitable for practical robot navigation. The core model, dubbed RatSLAM, has been demonstrated to have exactly the same advantages described earlier: it can build, maintain, and use maps simultaneously over extended periods of time and can construct maps of large and complex areas from very weak geometric information. The work contrasts with other efforts to embody models of rat brains in robots. The article describes the key elements of the known biology of the rat brain in relation to navigation and how the RatSLAM model captures the ideas from biology in a fashion suitable for implementation on a robotic platform. The paper then outline RatSLAM's performance in two difficult robot navigation challenges, demonstrating how a cognitive robotics approach to navigation can produce results that rival other state of the art approaches in robotics.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== The RatSLAM project: robot spatial navigation =====
+'''Authors: ''' Wyeth, G., Milford, M., Schulz, R. and Wiles, J.
+
+'''Reference info: ''' Neuromorphic and Brain-Based Robots, pp. 87-108, 2011
+
+'''Keywords: '''
+
+'''Citations: '''
+
+'''Abstract: '''
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== CAT-SLAM: probabilistic localisation and mapping using a continuous appearance-based trajectory =====
+'''Authors: ''' Maddern, W., Milford, M. and Wyeth, G.
+
+'''Reference info: ''' The International Journal of Robotics Research
+Vol. 31(4), pp. 429-451, 2012
+http://dx.doi.org/10.1177/0278364912438273
+
+'''Keywords: '''
+
+'''Citations: '''
+
+'''Abstract: '''
+
+This paper describes a new system, dubbed Continuous Appearance-based Trajectory Simultaneous Localisation and Mapping (CAT-SLAM), which augments sequential appearance-based place recognition with local metric pose filtering to improve the frequency and reliability of appearance-based loop closure. As in other approaches to appearance-based mapping, loop closure is performed without calculating global feature geometry or performing 3D map construction. Loop-closure filtering uses a probabilistic distribution of possible loop closures along the robot‚Äôs previous trajectory,which is represented by a linked list of previously visited locations linked by odometric information. Sequential appearance-based place recognition and local metric pose filtering are evaluated simultaneously using a Rao‚ÄìBlackwellised particle filter, which weights particles based on appearance matching over sequential frames and the similarity of robot motion along the trajectory. The particle filter explicitly models both the likelihood of revisiting previous locations and exploring new locations. A modified resampling scheme counters particle deprivation and allows loop-closure updates to be performed in constant time for a given environment. We compare the performance of CAT-SLAM with FAB-MAP (a state-of-the-art appearance-only SLAM algorithm) using multiple real-world datasets, demonstrating an increase in the number of correct loop closures detected by CAT-SLAM.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== A neural-dynamic architecture for flexible spatial language: intrinsic frames, the term "between", and autonomy=====
+'''Authors: ''' Hengel, U.V., Sandramirskaya Y., Schneegans S., Schoener G.
+
+'''Reference info: ''' RO-MAN IEEE, pp 150-157 2012, 
+
+'''Keywords: '''
+control engineering computing, human-robot interaction, natural language processing, neural nets, flexible spatial language, grounded spatial language, human-robot interaction, neural-dynamic architecture
+
+'''Citations: ''' 0
+
+'''Abstract: '''
+Spatial language is a privileged channel of human- robot interaction. We extend a neural-dynamic architecture for grounded spatial language in three ways: First, viewer- centered vs. intrinsic reference frames may be autonomously selected. Using intrinsic reference frames requires estimation of the orientation of the reference object. Second, we employ a similar orientation estimation to enable the use of configurations of reference objects for spatial terms such as ‚Äúbetween‚Äù. Third, we enhance the autonomy of the system so that the required sequence of attentional shifts, coordinate transforms, and selection decisions emerges from the time-continuous neural dynamics. By implementing the approach in a robotic setting we demonstrate that simple feature information obtained from video cameras is sufficient to ground spatial language.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== Natural human-robot interaction through spatial language: a Dynamic Neural Field approach =====
+'''Authors: ''' Sandamirskaya, Y. and Lipinski, J.
+
+'''Reference info: ''' RO-MAN IEEE, 2010, page 600-607 
+http://dx.doi.org/10.1109/ROMAN.2010.5598671
+
+'''Keywords: '''
+human-robot interaction, mobile robots, autonomous robotic system, dynamic neural field, human spatial language ,linguistic input
+
+'''Citations: ''' 7
+
+'''Abstract: '''
+
+For an autonomous robotic system, the ability to share the same workspace and interact with humans is the basis for cooperative behavior. In this work, we investigate human spatial language as the communicative channel between the robot and the human, facilitating their joint work on a tabletop. We specifically combine the theory of Dynamic Neural Fields that represent perceptual and cognitive states with motor control and linguistic input in a robotic demonstration. We show that such a neural dynamic framework can integrate across symbolic, perceptual, and motor processes to generate task-specific spatial communication in real time.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== A neurobehavioral model of flexible spatial language behaviors. =====
+'''Authors: ''' Lipinski, J., Schneegans, S., Sandamirskaya, Y., Spencer, J.P. and Schöner, G.
+
+'''Reference info: ''' Journal of experimental psychology. Learning, memory, and cognition
+Vol. 38(6), pp. 1490-511, 2012
+http://dx.doi.org/10.1037/a0022643
+
+'''Keywords: '''
+
+'''Citations: ''' 6
+
+'''Abstract: '''
+
+We propose a neural dynamic model that specifies how low-level visual processes can be integrated with higher level cognition to achieve flexible spatial language behaviors. This model uses real-word visual input that is linked to relational spatial descriptions through a neural mechanism for reference frame transformations. We demonstrate that the system can extract spatial relations from visual scenes, select items based on relational spatial descriptions, and perform reference object selection in a single unified architecture. We further show that the performance of the system is consistent with behavioral data in humans by simulating results from 2 independent empirical studies, 1 spatial term rating task and 1 study of reference object selection behavior. The architecture we present thereby achieves a high degree of task flexibility under realistic stimulus conditions. At the same time, it also provides a detailed neural grounding for complex behavioral and cognitive processes.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== Contributions of dynamic systems theory to cognitive development =====
+'''Authors: ''' Spencer, J.P., Austin, A. and Schutte, A.R.
+
+'''Reference info: ''' Cognitive Development
+Vol. 27(4), pp. 401-418, 2012
+http://dx.doi.org/10.1016/j.cogdev.2012.07.006 	
+
+'''Keywords: ''' Dynamic systems theory, Spatial memory, Perseveration, Neural networks, Object concept
+
+'''Citations: ''' 1
+
+'''Abstract: '''
+
+We examine the contributions of dynamic systems theory to the field of cognitive development, focusing on modeling using dynamic neural fields. After introducing central concepts of dynamic field theory (DFT), we probe empirical predictions and findings around two examples‚Äîthe DFT of infant perseverative reaching that explains Piaget‚Äôs A-not-B error and the DFT of spatial memory that explain changes in spatial cognition in early develop- ment. Review of the literature around these examples reveals that computational modeling is having an impact on empirical research in cognitive development; however, this impact does not extend to neural and clinical research. Moreover, there is a tendency for researchers to interpret models narrowly, anchoring them to spe- cific tasks. We conclude on an optimistic note, encouraging both theoreticians and experimentalists to work toward a more theory- driven future.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== A neural-dynamic architecture for behavioral organization of an embodied agent =====
+'''Authors: ''' Sandamirskaya, Y., Richter, M. and Schöner, G.	
+
+'''Reference info: ''' Development and Learning (ICDL), 2011 IEEE International Conference on, pp 1-7
+http://dx.doi.org/10.1109/DEVLRN.2011.6037353
+
+'''Keywords: '''
+
+'''Citations: ''' 8
+
+'''Abstract: '''
+
+How agents generate meaningful sequences of ac- tions in natural environments is one of the most challenging problems in studies of natural cognition and in the design of artificial cognitive systems. Each action in a sequence must contribute to the behavioral objective, while at the same time satisfying constraints that arise from the environment, the agent‚Äôs embodiment, and the agent‚Äôs behavioral history. In this paper, we introduce a neural-dynamic architecture that enables selection of an appropriate action for a given task in a particular environment and is open to learning. We use the same framework of neural dynamics for all processes from perception, to representation and motor planning as well as behavioral organization. This facilitates integration and flexibility. The neural dynamic representations of particular behaviors emerge on the fly from the interplay between task and environment inputs as well as behavioral history. All behavioral states are attractors of the neural dynamics, whose instabilities lead to behavioral switches. As a result, behavioral organization is robust in the face of noisy and unreliable sensory information.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== Dynamic Neural Fields as Building Blocks of a Cortex-Inspired Architecture for Robotic Scene Representation
+ =====
+'''Authors: ''' Zibner, S.K.U., Faubel, C., Iossifidis, I. and Schöner, G.
+
+'''Reference info: ''' IEEE Transactons on Autonomous Mental Development
+Vol. 3(1), pp. 74-91, 2011
+http://dx.doi.org/10.1109/TAMD.2011.2109714
+
+'''Keywords: '''
+
+'''Citations: ''' 16
+
+'''Abstract: '''
+
+ Based on the concepts of dynamic field theory (DFT), we present an architecture that autonomously generates scene representations by controlling gaze and attention, creating visual objects in the foreground, tracking objects, reading them into working memory, and taking into account their visibility. At the core of this architecture are three-dimensional dynamic neural fields (DNFs) that link feature to spatial information. These three-dimensional fields couple into lower dimensional fields, which provide the links to the sensory surface and to the motor systems.We discuss how DNFs can be used as building blocks for cognitive architectures, characterize the critical bifurcations in DNFs, as well as the possible coupling structures among DNFs. In a series of robotic experiments, we demonstrate how the DNF architecture provides the core functionalities of a scene representation.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== Robust Haptic Recognition by Anthropomorphic Bionic Hand through Dynamic Interaction =====
+'''Authors: ''' Hosoda, K.
+
+'''Reference info: ''' IEEE International Conference on Intelligent Robots and Systems, pp. 1236-1241, 2010
+http://dx.doi.org/10.1109/IROS.2010.5649297
+
+'''Keywords: '''
+
+'''Citations: ''' 2
+
+'''Abstract: '''
+
+This paper describes learning of robust haptic recognition by Bionic Hand, a human-like robot hand, through dynamic interaction with the object. Bionic hand is a human-like hand that has soft skin with distributed receptors and is driven by artificial pneumatic muscles. At the beginning of learning, it utilizes the result of physical interaction with the object: thanks to the hand compliance, regrasping will leads object's posture to stable one in the hand. This result can be successively used as object classification for learning dynamic interaction between the hand and the object by a recurrent neural network. We conduct experiments and show that the proposed method is effective for robust and fast object recognition.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== Anthropomorphic Muscular-Skeletal Robotic Upper Limb for Understanding Embodied Intelligence =====
+'''Authors: ''' Hosoda, K., Sekimoto, S., Nishigori, Y., Takamuku, S. and Ikemoto, S.
+
+'''Reference info: ''' Advanced Robotics
+Vol. 26(7), pp. 729-744, 2012
+
+'''Keywords: '''
+
+'''Citations: ''' 1
+
+'''Abstract: '''
+
+In this paper, we describe an anthropomorphic muscularskeletal robotic upper limb and focus on its soft interaction with the environment. Two experiments are conducted to demonstrate the ability of the system: object recognition by dynamic touch and adaptive door opening. The first experiment shows that the com- pliant robot is advantageous for categorizing an object by shaking and the second experiment shows that the human-comparable compliant robot can open a door without precise control. The robot is expected to have comparable anisotropic compliance to that of a human, which can be utilized for realization of human-like adaptive behavior.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== Design principles for biologically inspired cognitive robotics
+=====
+'''Authors: ''' Krichmar, J.L.
+
+'''Reference info: ''' Biologically Inspired Cognitive Architectures
+Vol. 1, pp. 73-81, 2012
+http://dx.doi.org/10.1016/j.bica.2012.04.003
+
+'''Keywords: '''
+
+'''Citations: '''
+
+'''Abstract: '''
+
+In this paper, we describe an anthropomorphic muscularskeletal robotic upper limb and focus on its soft interaction with the environment. Two experiments are conducted to demonstrate the ability of the system: object recognition by dynamic touch and adaptive door opening. The first experiment shows that the com- pliant robot is advantageous for categorizing an object by shaking and the second experiment shows that the human-comparable compliant robot can open a door without precise control. The robot is expected to have comparable anisotropic compliance to that of a human, which can be utilized for realization of human-like adaptive behavior.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
+===== A robotic architecture for action selection and behavioral organization inspired by human cognition =====
+'''Authors: ''' Richter, M.; Sandamirskaya, Y. ; Schoner, G.
+
+'''Reference info: ''' Intelligent Robots and Systems (IROS), 2012 IEEE/RSJ International Conference on, pp 2457-2464
+http://dx.doi.org/10.1109/IROS.2012.6386153
+
+'''Keywords: '''
+human-robot interaction, constraint handling, humanoid robots, neurocontrollers,human cognition, robotic architecture, robotic behavioral organization, task-specific behavioral constraints,
+
+'''Citations: ''' 7
+
+'''Abstract: '''
+
+Robotic agents that interact with humans and perform complex, everyday tasks in natural environments will require a system to autonomously organize their behavior. Current systems for robotic behavioral organization typically abstract from the low-level sensory-motor embodiment of the robot, leading to a gap between the level at which a sequence of actions is planned and the levels of perception and motor control. This gap is a major bottleneck for the autonomy of systems in complex, dynamic environments. To address this issue, we present a neural-dynamic framework for behavioral organization, in which the action selection mechanism is tightly coupled to the agent's sensory-motor systems. The elementary behaviors (EBs) of the robot are dynamically organized into sequences based on task-specific behavioral constraints and online perceptual information. We demonstrate the viability of our approach by implementing a neural-dynamic architecture on the humanoid robot NAO. The system is capable of producing sequences of EBs that are directed at objects (e.g., grasping and pointing). The sequences are flexible in that the robot autonomously adapts the individual EBs and their sequential order in response to changes in the sensed environment. The architecture can accommodate different tasks and can be articulated for different robotic platforms. Its neural-dynamic substrate is particularly well-suited for learning and adaptation.
+
+'''Reading Report: '''
+
+'''Comments and Summary: '''
+
+-----
