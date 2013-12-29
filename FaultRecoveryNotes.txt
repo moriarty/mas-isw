@@ -1,0 +1,27 @@
+Fault recovery in Robotics is a key feature that is sadly lacking in most robots currently. Although most robots are designed to tolerate faults to a certain extend, they are unable to compensate for faults.
+
+Noise -> but not more. 
+Falling -> damage. 
+Physical -> in next section
+
+
+"Fault" in this context would refer to physical damage caused to the robot, be it from its external environment or internal environment, which will then cause the robot to be unable to perform its given task at a given moment. Hence, "Fault Recovery" would refer to the process the robot takes to return itself to a state where it will be able to carry out its given task, before the fault occur. One good example is actuator motor/sensor damage.
+
+Physical Damage.
+
+In humans or animals, the presence of "faults", or in biological sense, injuries, to its limbs will cause the affected creature to "limp" along, or produce an alternative sort of movement pattern that is different from how the creature normally move. However, given a robot with legs, such an injury could well cause the robot to stop in its tracks or fall.
+
+
+
+To enable robots to have such an ability to recovery from such faults, a study in factors that contribute to such a recovery ability of biological organisms are studied. The main contributing factors affecting such an ability are the design of the physical structure of the robot and the control architecture of the robot.
+
+
+Fault recovery methods usually involve some sort of modification of the physical structure or control architecture of the robot at runtime. This will require a redesign of existing robot actuators and control architectures to allow for such modifications at runtime.
+
+
+BUZZ WORD:
+
+Such methods of runtime modifications of infrastructure can be generalized from a related field of self-configurable computing. A keyword that has been in the scientific community around recently is the term "Autonomous Computing".
+
+
+Autonomous Computing encompasses computing systems, generally software systems, that are "self-managing", meaning they can function with minimal human intervention. A study in this field will yield design considerations and methods that can make a system "self-managing".
